@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from backend.models import *
 from backend.serializers import *
+from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 import numpy as np
 import random
@@ -244,7 +245,7 @@ def sms_register(request):
 
 @api_view(['GET'])
 def download_products(request, shop):
-    # Create the HttpResponse object with the appropriate CSV header.
+	# Create the HttpResponse object with the appropriate CSV header.
 	response = HttpResponse(content_type='text/csv')
 	response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
 	b = Price.objects.filter(ShopID=shop)
@@ -253,3 +254,24 @@ def download_products(request, shop):
 	c = {'data': b}
 	response.write(t.render(c))
 	return response
+
+@api_view(['GET'])
+def get_user_by_phone(request, phone):
+	try:
+		post = User.objects.get(Userphonenumber=phone)
+	except User.DoesNotExist:
+		return HttpResponse(status=404)
+	return HttpResponse(post.UserName)
+
+
+@csrf_exempt
+def dialogflow(request):
+	# build a request object
+	print(request.body)
+	req = json.loads(request.body)
+	# get action from json
+	action = req.get('queryResult').get('action')
+	# return a fulfillment message
+	fulfillmentText = {'fulfillmentText': 'This is Django test response from webhook.'}
+	# return response
+	return JsonResponse(fulfillmentText, safe=False)
