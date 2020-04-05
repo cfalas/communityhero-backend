@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from backend.models import *
 from backend.serializers import *
+from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 import numpy as np
 import random
@@ -193,8 +194,10 @@ def deliver_order(request, order):
 @api_view(['POST'])
 def sms_order(request):
 	if request.method == 'POST':
+
 		names = ProductType.objects.all()
 		b = request.data
+			
 		print(b["from"])
 		resp = {}
 		print(b["content"])
@@ -203,8 +206,10 @@ def sms_order(request):
 		except User.DoesNotExist:
 			resp["status"]="user_error"
 			return JsonResponse(resp)
-		neworder = PastOrder(UserID=user)
-		neworder.save()
+		if "confirm" in b and b["confirm"]=="true":
+			order = PastOrder(UserID=user)
+			order.save()
+
 		items = []
 		totalCost = 0
 		for product in b["content"].split('\n'):
@@ -222,8 +227,12 @@ def sms_order(request):
 				items.append(mindistproduct.ProductBrandID.BrandName + ' ' + mindistproduct.ProductName)
 				price = Price.objects.filter(ProductID=mindistproduct).order_by('Price')[0]
 				totalCost+=price.Price
-				item = OrderItems(OrderID=neworder, PriceID=price, Quantity=1)
-				item.save()
+				if "confirm" in b and b["confirm"]=="true":
+					item = OrderItems(OrderID=order, PriceID=price, Quantity=1)
+					item.save()
+				else:
+					item = ShoppingItem(UserID=user, PriceID=price, Quantity=1)
+					item.save()
 			else:
 				items.append('not found')
 			
@@ -244,7 +253,7 @@ def sms_register(request):
 
 @api_view(['GET'])
 def download_products(request, shop):
-    # Create the HttpResponse object with the appropriate CSV header.
+	# Create the HttpResponse object with the appropriate CSV header.
 	response = HttpResponse(content_type='text/csv')
 	response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
 	b = Price.objects.filter(ShopID=shop)
@@ -253,3 +262,40 @@ def download_products(request, shop):
 	c = {'data': b}
 	response.write(t.render(c))
 	return response
+
+@api_view(['GET'])
+def get_user_by_phone(request, phone):
+	try:
+		post = User.objects.get(Userphonenumber=phone)
+	except User.DoesNotExist:
+		return HttpResponse(status=404)
+	return HttpResponse(post.UserName)
+
+
+@api_view(['DELETE'])
+def cart_price_user(request, price, user):
+	if request.method=='DELETE':
+		try:
+			ShoppingItem.objects.get(PriceID=price, UserID=user).delete()
+		except ShoppingItem.DoesNotExist:
+			return HttpResponse(status=404)
+		return HttpResponse("Done")
+
+@api_view(['GET'])
+def cart_user(request, user):
+	if request.method=='GET':
+		cart = ShoppingItem.objects.filter(UserID=user)
+		serializer = ShoppingItemSerializer(cart, many=True)
+		return Response(serializer.data)
+
+@api_view(['POST'])
+def cart_order(request, user):
+	if request.method=='POST':
+		cart = ShoppingItem.objects.filter(UserID=user)
+		order = PastOrder(UserID=User.objects.get(UserID=user))
+		order.save()
+		for item in cart:
+			o = OrderItems(OrderID=order, PriceID=item.PriceID, Notes=item.Notes, Quantity=item.Quantity)
+			o.save()
+		cart = ShoppingItem.objects.filter(UserID=user).delete()		
+		return HttpResponse(status=200)

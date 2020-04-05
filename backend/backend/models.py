@@ -92,6 +92,7 @@ class ShoppingItem(models.Model):
 
     class Meta:
         db_table = 'ShoppingItem'
+        unique_together = ('UserID', 'PriceID',)
 
 class User(models.Model):
     UserID = models.AutoField(db_column='UserID', primary_key=True)  # Field Name made lowercase.
