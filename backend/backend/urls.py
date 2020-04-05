@@ -39,5 +39,6 @@ urlpatterns = [
     url(r'^api/v1/user/(?P<phone>[0-9+]+)$', backend.views.get_user_by_phone),
     url(r'^api/v1/cart/(?P<user>[0-9]+)/(?P<price>[0-9]+)$', backend.views.cart_price_user),
     url(r'^api/v1/cart/(?P<user>[0-9]+)/$', backend.views.cart_user),
+    url(r'^api/v1/cart/confirm/(?P<user>[0-9]+)/$', backend.views.cart_order),
 
 ]

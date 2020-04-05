@@ -287,3 +287,15 @@ def cart_user(request, user):
 		cart = ShoppingItem.objects.filter(UserID=user)
 		serializer = ShoppingItemSerializer(cart, many=True)
 		return Response(serializer.data)
+
+@api_view(['POST'])
+def cart_order(request, user):
+	if request.method=='POST':
+		cart = ShoppingItem.objects.filter(UserID=user)
+		order = PastOrder(UserID=User.objects.get(UserID=user))
+		order.save()
+		for item in cart:
+			o = OrderItems(OrderID=order, PriceID=item.PriceID, Notes=item.Notes, Quantity=item.Quantity)
+			o.save()
+		cart = ShoppingItem.objects.filter(UserID=user).delete()		
+		return HttpResponse(status=200)
