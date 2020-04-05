@@ -260,3 +260,13 @@ def get_user_by_phone(request, phone):
 	except User.DoesNotExist:
 		return HttpResponse(status=404)
 	return HttpResponse(post.UserName)
+
+
+@api_view(['DELETE'])
+def cart_price_user(request, price, user):
+	if request.method=='DELETE':
+		try:
+			ShoppingItem.objects.get(PriceID=price, UserID=user).delete()
+		except ShoppingItem.DoesNotExist:
+			return HttpResponse(status=404)
+		return HttpResponse("Done")
