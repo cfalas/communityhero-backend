@@ -237,6 +237,7 @@ def sms_order(request):
 				items.append('not found')
 			
 		resp = {}
+		resp['userID'] = user.UserID
 		resp["items"] = items
 		resp["cost"] = totalCost
 		resp["status"]="ok"
