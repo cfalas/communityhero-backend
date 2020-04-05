@@ -37,6 +37,5 @@ urlpatterns = [
     url(r'^api/v1/sms/register/$', backend.views.sms_register),
     url(r'^api/download_products/(?P<shop>[0-9]+)$', backend.views.download_products),
     url(r'^api/v1/user/(?P<phone>[0-9+]+)$', backend.views.get_user_by_phone),
-    url(r'^webhook/$', backend.views.dialogflow),
 
 ]

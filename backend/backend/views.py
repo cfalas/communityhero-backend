@@ -204,8 +204,6 @@ def sms_order(request):
 		except User.DoesNotExist:
 			resp["status"]="user_error"
 			return JsonResponse(resp)
-		neworder = PastOrder(UserID=user)
-		neworder.save()
 		items = []
 		totalCost = 0
 		for product in b["content"].split('\n'):
@@ -223,7 +221,7 @@ def sms_order(request):
 				items.append(mindistproduct.ProductBrandID.BrandName + ' ' + mindistproduct.ProductName)
 				price = Price.objects.filter(ProductID=mindistproduct).order_by('Price')[0]
 				totalCost+=price.Price
-				item = OrderItems(OrderID=neworder, PriceID=price, Quantity=1)
+				item = ShoppingItem(UserID=user, PriceID=price, Quantity=1)
 				item.save()
 			else:
 				items.append('not found')
@@ -262,16 +260,3 @@ def get_user_by_phone(request, phone):
 	except User.DoesNotExist:
 		return HttpResponse(status=404)
 	return HttpResponse(post.UserName)
-
-
-@csrf_exempt
-def dialogflow(request):
-	# build a request object
-	print(request.body)
-	req = json.loads(request.body)
-	# get action from json
-	action = req.get('queryResult').get('action')
-	# return a fulfillment message
-	fulfillmentText = {'fulfillmentText': 'This is Django test response from webhook.'}
-	# return response
-	return JsonResponse(fulfillmentText, safe=False)
