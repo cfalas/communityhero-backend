@@ -194,8 +194,10 @@ def deliver_order(request, order):
 @api_view(['POST'])
 def sms_order(request):
 	if request.method == 'POST':
+
 		names = ProductType.objects.all()
 		b = request.data
+			
 		print(b["from"])
 		resp = {}
 		print(b["content"])
@@ -204,6 +206,10 @@ def sms_order(request):
 		except User.DoesNotExist:
 			resp["status"]="user_error"
 			return JsonResponse(resp)
+		if "confirm" in b and b["confirm"]=="true":
+			order = PastOrder(UserID=user)
+			order.save()
+
 		items = []
 		totalCost = 0
 		for product in b["content"].split('\n'):
@@ -221,8 +227,12 @@ def sms_order(request):
 				items.append(mindistproduct.ProductBrandID.BrandName + ' ' + mindistproduct.ProductName)
 				price = Price.objects.filter(ProductID=mindistproduct).order_by('Price')[0]
 				totalCost+=price.Price
-				item = ShoppingItem(UserID=user, PriceID=price, Quantity=1)
-				item.save()
+				if "confirm" in b and b["confirm"]=="true":
+					item = OrderItems(OrderID=order, PriceID=price, Quantity=1)
+					item.save()
+				else:
+					item = ShoppingItem(UserID=user, PriceID=price, Quantity=1)
+					item.save()
 			else:
 				items.append('not found')
 			
@@ -270,3 +280,10 @@ def cart_price_user(request, price, user):
 		except ShoppingItem.DoesNotExist:
 			return HttpResponse(status=404)
 		return HttpResponse("Done")
+
+@api_view(['GET'])
+def cart_user(request, user):
+	if request.method=='GET':
+		cart = ShoppingItem.objects.filter(UserID=user)
+		serializer = ShoppingItemSerializer(cart, many=True)
+		return Response(serializer.data)
