@@ -30,3 +30,9 @@ class OrderItemSerializer(serializers.ModelSerializer):
         model = OrderItems
         fields = ('OrderID', 'PriceID', 'Quantity', 'Notes')
         depth = 3
+
+class ShoppingItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ShoppingItem
+        fields = ('PriceID', 'Quantity', 'Notes')
+        depth = 3
