@@ -12,6 +12,7 @@ import names
 import json
 import decimal
 import nltk
+import requests
 
 from math import radians, cos, sin, asin, sqrt 
 def distance(lat1, lon1, lat2, lon2): 
@@ -197,7 +198,7 @@ def sms_order(request):
 		b = request.data
 		print(b["from"])
 		resp = {}
-		print(b["content"])
+		print(b["content"].split('\n'))
 		try:
 			user = User.objects.get(Userphonenumber=b['from'])
 		except User.DoesNotExist:
@@ -253,3 +254,64 @@ def download_products(request, shop):
 	c = {'data': b}
 	response.write(t.render(c))
 	return response
+
+STATE = {}
+LAT = {}
+LNG = {}
+YES_REPLIES = ['yes', 'yeah', 'correct', 'yep']
+NO_REPLIES = ['no', 'nope', 'wrong', 'nop']
+LIST_QUERIES = ['list', 'cart']
+
+
+@api_view(['POST'])
+def chatbot(request):
+	if request.method=='POST':
+		b = request.data
+		r = {}
+		if not user_exists(b['from']) and b['from'] not in STATE:
+			r['content'] =  'Welcome! I noticed you are new here. Why don\'t you go ahead and send me your address so that I can sign you up?'
+			STATE[b['from']] = 'registering'
+		elif b['from'] in STATE:
+			if STATE[b['from']]=='registering':
+				r['content'] = geocode(b)
+				STATE[b['from']] = 'geocoding'
+			elif STATE[b['from']]=='geocoding':
+				if b['content'].lower() in YES_REPLIES:
+					requests.post('http://localhost:8000/api/v1/sms/register/', '{"from": ' + b['from'] + ', "lat": ' + LAT[b['from']] + ', "lng": ' + LNG[b['from']] + '}')
+					r['content'] = 'You are now registered! Nice! You can send in orders at any time.'
+					STATE[b['from']]='registered'
+				elif b['content'].lower() in NO_REPLIES:
+					r['content'] = 'Oh sorry about that :(\nCan you try that again with a more specific location?'
+					STATE[b['from']]='registering'
+			elif STATE[b['from']]=='registered':
+				# Order received
+				print(b)
+				req = requests.post('http://localhost:8000/api/v1/sms/order/', b)
+				req = req.json()
+				print(req)
+				r['content'] = 'Here\'s what I found:\n'
+				for item in range(len(req['items'])):
+					r['content']+=b['content'].split('\n')[item] + ": " + req['items'][item] + '\n'
+				r['content']+='That would cost you a total of €' + req['cost']
+		else:
+			STATE[b['from']] = 'registered'
+		
+		r['from'] = 'bot'
+
+		return JsonResponse(r)
+
+def user_exists(phone):
+	try:
+		user = User.objects.get(Userphonenumber=phone)
+		return True
+	except:
+		return False
+
+def geocode(msg):
+	req = requests.get("https://nominatim.openstreetmap.org/search/" + msg['content'].replace(" ", '%20') + "?format=json").json()[0]
+	LAT[msg['from']] = req['lat']
+	LNG[msg['from']] = req['lon']
+	return "So you're telling me you live here? https://www.openstreetmap.org/?mlat=" + req['lat'] + "&mlon=" + req['lon']+ " \nIt's not that I don't know, just checking if you know ;)"
+
+def area(box):
+	return distance(box[1], box[2], box[0], box[2])*distance(box[3], box[0], box[2], box[0])
