@@ -198,7 +198,7 @@ def sms_order(request):
 
 		names = ProductType.objects.all()
 		b = request.data
-			
+		print(b)
 		print(b["from"])
 		resp = {}
 		print(b["content"].split('\n'))
