@@ -249,7 +249,19 @@ def sms_order(request):
 def sms_register(request):
 	if request.method == 'POST':
 		b = json.loads(request.body.decode('utf-8'))
-		u = User(Userphonenumber=b["from"], Userlatitude=float(b['lat']), Userlongitude=float(b['lng']))
+		lt = 0
+		ln = 0
+		if "address" in b:
+			req = requests.get("https://nominatim.openstreetmap.org/search/" + b['address'].replace(" ", '%20') + "?format=json").json()[0]
+			lt = req['lat']
+			ln = req['lon']
+		else:
+			lt = b['lat']
+			ln = b['lon']
+		
+
+
+		u = User(Userphonenumber=b["from"], Userlatitude=float(lt), Userlongitude=float(ln))
 		u.save()
 		return Response("Done")
 
