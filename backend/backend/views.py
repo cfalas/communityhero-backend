@@ -198,7 +198,7 @@ def sms_order(request):
 
 		names = ProductType.objects.all()
 		b = request.data
-			
+		print(b)
 		print(b["from"])
 		resp = {}
 		print(b["content"].split('\n'))
@@ -248,8 +248,21 @@ def sms_order(request):
 @api_view(['POST'])
 def sms_register(request):
 	if request.method == 'POST':
+		print(request.body.decode('utf-8'))
 		b = json.loads(request.body.decode('utf-8'))
-		u = User(Userphonenumber=b["from"], Userlatitude=float(b['lat']), Userlongitude=float(b['lng']))
+		lt = 0
+		ln = 0
+		if "address" in b:
+			req = requests.get("https://nominatim.openstreetmap.org/search/" + b['address'].replace(" ", '%20') + "?format=json").json()[0]
+			lt = req['lat']
+			ln = req['lon']
+		else:
+			lt = b['lat']
+			ln = b['lon']
+		
+
+
+		u = User(Userphonenumber=b["from"], Userlatitude=float(lt), Userlongitude=float(ln))
 		u.save()
 		return Response("Done")
 
@@ -277,6 +290,7 @@ LIST_QUERIES = ['list', 'cart']
 def chatbot(request):
 	if request.method=='POST':
 		b = request.data
+		print(b)
 		r = {}
 		if not user_exists(b['from']) and b['from'] not in STATE:
 			r['content'] =  'Welcome! I noticed you are new here. Why don\'t you go ahead and send me your address so that I can sign you up?'
