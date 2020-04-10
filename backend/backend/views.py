@@ -301,7 +301,7 @@ def chatbot(request):
 				STATE[b['from']] = 'geocoding'
 			elif STATE[b['from']]=='geocoding':
 				if b['content'].lower() in YES_REPLIES:
-					requests.post('http://localhost:8000/api/v1/sms/register/', '{"from": ' + b['from'] + ', "lat": ' + LAT[b['from']] + ', "lng": ' + LNG[b['from']] + '}')
+					requests.post('https://rhubarb-cake-22341.herokuapp.com/api/v1/sms/register/', '{"from": ' + b['from'] + ', "lat": ' + LAT[b['from']] + ', "lng": ' + LNG[b['from']] + '}')
 					r['content'] = 'You are now registered! Nice! You can send in orders at any time.'
 					STATE[b['from']]='registered'
 				elif b['content'].lower() in NO_REPLIES:
@@ -310,7 +310,7 @@ def chatbot(request):
 			elif STATE[b['from']]=='registered':
 				# Order received
 				print(b)
-				req = requests.post('http://localhost:8000/api/v1/sms/order/', b)
+				req = requests.post('https://rhubarb-cake-22341.herokuapp.com/api/v1/sms/order/', b)
 				req = req.json()
 				print(req)
 				r['content'] = 'Here\'s what I found:\n'
