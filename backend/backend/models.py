@@ -50,6 +50,7 @@ class Price(models.Model):
 
 class Product(models.Model):
     ProductID = models.AutoField(db_column='ProductID', primary_key=True)  # Field Name made lowercase.
+    WordpressID = models.IntegerField(null=True)
     ProductTypeID = models.ForeignKey('ProductType', models.DO_NOTHING, db_column='ProductTypeID', blank=True, null=True)  # Field Name made lowercase.
     ProductName = models.CharField(db_column='ProductName', max_length=45, blank=True, null=True)  # Field Name made lowercase.
     ProductBrandID = models.ForeignKey(Brand, models.DO_NOTHING, db_column='ProductBrandID', blank=True, null=True)  # Field Name made lowercase.

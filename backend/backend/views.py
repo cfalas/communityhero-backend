@@ -296,6 +296,7 @@ def chatbot(request):
 			r['content'] =  'Welcome! I noticed you are new here. Why don\'t you go ahead and send me your address so that I can sign you up?'
 			STATE[b['from']] = 'registering'
 		elif b['from'] in STATE:
+			print(STATE[b['from']])
 			if STATE[b['from']]=='registering':
 				r['content'] = geocode(b)
 				STATE[b['from']] = 'geocoding'
