@@ -258,7 +258,7 @@ def sms_register(request):
 			ln = req['lon']
 		else:
 			lt = b['lat']
-			ln = b['lon']
+			ln = b['lng']
 		
 
 
