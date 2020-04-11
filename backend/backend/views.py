@@ -225,10 +225,10 @@ def sms_order(request):
 			print(mindistproduct.ProductName, mindist)
 			# TODO: Return cheapest/closest combination
 			if mindist<0.95 and len(Price.objects.filter(ProductID=mindistproduct).order_by('Price'))>0:
-				print(Price.objects.filter(ProductID=mindistproduct, ShopID=Shop.objects.get(ShopID=4)).order_by('Price')[0])
+				print(Price.objects.filter(ProductID=mindistproduct).order_by('Price')[0])
 				items.append(mindistproduct.ProductBrandID.BrandName + ' ' + mindistproduct.ProductName)
 				itemsWordpress.append(mindistproduct.WordpressID)
-				price = Price.objects.filter(ProductID=mindistproduct, ShopID=Shop.objects.get(ShopID=4)).order_by('Price')[0]
+				price = Price.objects.filter(ProductID=mindistproduct).order_by('Price')[0]
 				totalCost+=price.Price
 				if "confirm" in b and b["confirm"]=="true":
 					item = OrderItems(OrderID=order, PriceID=price, Quantity=1)
@@ -299,6 +299,7 @@ def chatbot(request):
 		b = request.data
 		print(b)
 		r = {}
+		r['content'] = ''
 		if not user_exists(b['from']):
 			r['content'] =  'Welcome! I noticed you are new here. Why don\'t you go ahead and send me your address so that I can sign you up?'
 			u = User(Userphonenumber=b['from'], UserState=STATE['registering'])
@@ -329,10 +330,15 @@ def chatbot(request):
 				print(req)
 				r['content'] = 'Here\'s what I found:\n'
 				for item in range(len(req['items'])):
-					r['content']+=b['content'].split('\n')[item] + ": " + req['items'][item] + '\n'
-				r['content']+='That would cost you a total of €' + req['cost'] + '\nYou can edit or complete your order here: http://192.168.30.179/wordpress/index.php/profile/alphamega/?fill_cart='
-				for item in range(len(req['items'])):
-					r['content']+=str(req['itemsWordpress'][item]) + ','
+					if req['items'][item] == 'not found':
+						r['content']+=b['content'].split('\n')[item] + ": " + req['items'][item] + '\n'
+					else:
+						r['content']+=req['items'][item] + '\n'
+				r['content']+='That would cost you a total of €' + str(req['cost']) + '\nYou can edit or complete your order here: http://192.168.30.179/wordpress/index.php/cart/?fill_cart='
+				for item in range(len(req['itemsWordpress'])):
+					r['content']+=str(req['itemsWordpress'][item])
+					if item!=len(req['items'])-1:
+						r['content']+=','
 		
 		r['from'] = 'bot'
 
@@ -387,3 +393,42 @@ def cart_order(request, user):
 			o.save()
 		cart = ShoppingItem.objects.filter(UserID=user).delete()		
 		return HttpResponse(status=200)
+
+@api_view(['GET', 'POST'])
+def messenger(request, *args, **kwargs):
+	if request.method=='POST':
+		# Converts the text payload into a python dictionary
+		incoming_message = json.loads(request.body.decode('utf-8'))
+		# Facebook recommends going through every entry since they might send
+		# multiple messages in a single call during high load
+		for entry in incoming_message['entry']:
+			for message in entry['messaging']:
+				# Check to make sure the received call is a message call
+				# This might be delivery, optin, postback for other events 
+				if 'message' in message:
+					# Print the message to the terminal
+					print(message)
+					# Assuming the sender only sends text. Non-text messages like stickers, audio, pictures
+					# are sent as attachments and must be handled accordingly. 
+					post_facebook_message(message['sender']['id'], message['message']['text'])    
+	else:
+		if request.GET['hub.verify_token'] == "communityhero":
+			return HttpResponse(request.GET['hub.challenge'])
+		else:
+			return HttpResponse('Error, invalid token')
+	return HttpResponse()    
+
+def post_facebook_message(fbid, recevied_message):
+	# Remove all punctuations, lower case the text and split it based on space
+	PAGE_ACCESS_TOKEN = 'EAAj0jNiswxgBAO3xduZATZAFZAyWGlzT3ZB505szUr3vINC2cpaEtm3K2wGQztnPEZAG07ZAijSm9csUZARKKUHWb0TRyIoGvCeIAmZAZAOH3blI15hlu7nhQ5ROyvxlqIi2RVbRGSJi4rY6g1eZANUZCHSKLTZBrNq4RfZCP88oZA7p8A4ClEPYU8h7Be'
+	user_details_url = "https://graph.facebook.com/v2.6/%s"%fbid 
+	user_details_params = {'fields':'first_name,last_name,profile_pic', 'access_token':PAGE_ACCESS_TOKEN} 
+	user_details = requests.get(user_details_url, user_details_params).json() 
+
+	r = requests.post('https://rhubarb-cake-22341.herokuapp.com/api/v1/chatbot', {"from": fbid, "content": recevied_message})
+	r = r.json()
+
+	post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
+	response_msg = json.dumps({"recipient":{"id":fbid}, "message":{"text":r['content']}})
+	status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
+	print(status)
