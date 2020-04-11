@@ -330,8 +330,11 @@ def chatbot(request):
 				print(req)
 				r['content'] = 'Here\'s what I found:\n'
 				for item in range(len(req['items'])):
-					r['content']+=b['content'].split('\n')[item] + ": " + req['items'][item] + '\n'
-				r['content']+='That would cost you a total of €' + req['cost'] + '\nYou can edit or complete your order here: http://192.168.30.179/wordpress/index.php/cart/?fill_cart='
+					if req['items'][item] == 'not found':
+						r['content']+=b['content'].split('\n')[item] + ": " + req['items'][item] + '\n'
+					else:
+						r['content']+=req['items'][item] + '\n'
+				r['content']+='That would cost you a total of €' + str(req['cost']) + '\nYou can edit or complete your order here: http://192.168.30.179/wordpress/index.php/cart/?fill_cart='
 				for item in range(len(req['itemsWordpress'])):
 					r['content']+=str(req['itemsWordpress'][item])
 					if item!=len(req['items'])-1:
