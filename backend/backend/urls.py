@@ -41,4 +41,5 @@ urlpatterns = [
     url(r'^api/v1/cart/(?P<user>[0-9]+)/(?P<price>[0-9]+)$', backend.views.cart_price_user),
     url(r'^api/v1/cart/(?P<user>[0-9]+)/$', backend.views.cart_user),
     url(r'^api/v1/cart/confirm/(?P<user>[0-9]+)/$', backend.views.cart_order),
+    url(r'^messenger', backend.views.messenger),
 ]
