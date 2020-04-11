@@ -225,10 +225,10 @@ def sms_order(request):
 			print(mindistproduct.ProductName, mindist)
 			# TODO: Return cheapest/closest combination
 			if mindist<0.95 and len(Price.objects.filter(ProductID=mindistproduct).order_by('Price'))>0:
-				print(Price.objects.filter(ProductID=mindistproduct, ShopID=Shop.objects.get(ShopID=4)).order_by('Price')[0])
+				print(Price.objects.filter(ProductID=mindistproduct).order_by('Price')[0])
 				items.append(mindistproduct.ProductBrandID.BrandName + ' ' + mindistproduct.ProductName)
 				itemsWordpress.append(mindistproduct.WordpressID)
-				price = Price.objects.filter(ProductID=mindistproduct, ShopID=Shop.objects.get(ShopID=4)).order_by('Price')[0]
+				price = Price.objects.filter(ProductID=mindistproduct).order_by('Price')[0]
 				totalCost+=price.Price
 				if "confirm" in b and b["confirm"]=="true":
 					item = OrderItems(OrderID=order, PriceID=price, Quantity=1)
