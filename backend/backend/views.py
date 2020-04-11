@@ -299,6 +299,7 @@ def chatbot(request):
 		b = request.data
 		print(b)
 		r = {}
+		r['content'] = ''
 		if not user_exists(b['from']):
 			r['content'] =  'Welcome! I noticed you are new here. Why don\'t you go ahead and send me your address so that I can sign you up?'
 			u = User(Userphonenumber=b['from'], UserState=STATE['registering'])
