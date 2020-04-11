@@ -50,6 +50,7 @@ class Price(models.Model):
 
 class Product(models.Model):
     ProductID = models.AutoField(db_column='ProductID', primary_key=True)  # Field Name made lowercase.
+    WordpressID = models.IntegerField(null=True)
     ProductTypeID = models.ForeignKey('ProductType', models.DO_NOTHING, db_column='ProductTypeID', blank=True, null=True)  # Field Name made lowercase.
     ProductName = models.CharField(db_column='ProductName', max_length=45, blank=True, null=True)  # Field Name made lowercase.
     ProductBrandID = models.ForeignKey(Brand, models.DO_NOTHING, db_column='ProductBrandID', blank=True, null=True)  # Field Name made lowercase.
@@ -100,7 +101,7 @@ class User(models.Model):
     Userphonenumber = models.CharField(db_column='UserPhoneNumber', max_length=15, blank=True, null=False, unique=True)  # Field Name made lowercase.
     Userlatitude = models.DecimalField(db_column='UserLatitude', max_digits=10, decimal_places=8, blank=True, null=True)  # Field Name made lowercase.
     Userlongitude = models.DecimalField(db_column='UserLongitude', max_digits=11, decimal_places=8, blank=True, null=True)  # Field Name made lowercase.
-
+    UserState = models.IntegerField(default=99)
     class Meta:
         db_table = 'User'
 

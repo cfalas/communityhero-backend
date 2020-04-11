@@ -16,7 +16,7 @@ class ProductTypeSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ('ProductID', 'ProductName', 'ProductTypeID', 'ProductBrandID', 'ProductQuantity', 'ProductUnit', 'ProductBarcode')
+        fields = ('ProductID', 'WordpressID', 'ProductName', 'ProductTypeID', 'ProductBrandID', 'ProductQuantity', 'ProductUnit', 'ProductBarcode')
         depth = 3
 
 class OrderSerializer(serializers.ModelSerializer):
