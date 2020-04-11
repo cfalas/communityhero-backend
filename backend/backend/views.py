@@ -278,7 +278,12 @@ def download_products(request, shop):
 	response.write(t.render(c))
 	return response
 
-STATE = {}
+STATE = {
+	'registering': 0,
+	'geocoding': 1,
+
+	'registered': 99
+}
 LAT = {}
 LNG = {}
 YES_REPLIES = ['yes', 'yeah', 'correct', 'yep']
@@ -292,34 +297,38 @@ def chatbot(request):
 		b = request.data
 		print(b)
 		r = {}
-		if not user_exists(b['from']) and b['from'] not in STATE:
+		if not user_exists(b['from']):
 			r['content'] =  'Welcome! I noticed you are new here. Why don\'t you go ahead and send me your address so that I can sign you up?'
-			STATE[b['from']] = 'registering'
-		elif b['from'] in STATE:
-			print(STATE[b['from']])
-			if STATE[b['from']]=='registering':
-				r['content'] = geocode(b)
-				STATE[b['from']] = 'geocoding'
-			elif STATE[b['from']]=='geocoding':
+			u = User(Userphonenumber=b['from'], UserState=STATE['registering'])
+			u.save()
+		else:
+			u = User.objects.get(Userphonenumber=b['from'])
+			print(u.UserState)
+			if u.UserState==STATE['registering']:
+				r['content'], u.Userlatitude, u.Userlongitude = geocode(b)
+				u.UserState = STATE['geocoding']
+				u.save()
+			elif u.UserState==STATE['geocoding']:
 				if b['content'].lower() in YES_REPLIES:
-					requests.post('https://rhubarb-cake-22341.herokuapp.com/api/v1/sms/register/', '{"from": ' + b['from'] + ', "lat": ' + LAT[b['from']] + ', "lng": ' + LNG[b['from']] + '}')
+					requests.post('http://localhost:8000/api/v1/sms/register/', '{"from": ' + b['from'] + ', "lat": ' + str(u.Userlatitude) + ', "lng": ' + str(u.Userlongitude) + '}')
 					r['content'] = 'You are now registered! Nice! You can send in orders at any time.'
-					STATE[b['from']]='registered'
+					u.UserState = STATE['registered']
+					u.save()
 				elif b['content'].lower() in NO_REPLIES:
 					r['content'] = 'Oh sorry about that :(\nCan you try that again with a more specific location?'
-					STATE[b['from']]='registering'
-			elif STATE[b['from']]=='registered':
+					u.UserState = STATE['registering']
+					u.save()
+			elif u.UserState==STATE['registered']:
 				# Order received
 				print(b)
-				req = requests.post('https://rhubarb-cake-22341.herokuapp.com/api/v1/sms/order/', b)
+				print('here')
+				req = requests.post('http://localhost:8000/api/v1/sms/order/', b)
 				req = req.json()
 				print(req)
 				r['content'] = 'Here\'s what I found:\n'
 				for item in range(len(req['items'])):
 					r['content']+=b['content'].split('\n')[item] + ": " + req['items'][item] + '\n'
 				r['content']+='That would cost you a total of €' + req['cost']
-		else:
-			STATE[b['from']] = 'registered'
 		
 		r['from'] = 'bot'
 
@@ -334,9 +343,7 @@ def user_exists(phone):
 
 def geocode(msg):
 	req = requests.get("https://nominatim.openstreetmap.org/search/" + msg['content'].replace(" ", '%20') + "?format=json").json()[0]
-	LAT[msg['from']] = req['lat']
-	LNG[msg['from']] = req['lon']
-	return "So you're telling me you live here? https://www.openstreetmap.org/?mlat=" + req['lat'] + "&mlon=" + req['lon']+ " \nIt's not that I don't know, just checking if you know ;)"
+	return "So you're telling me you live here? https://www.openstreetmap.org/?mlat=" + req['lat'] + "&mlon=" + req['lon']+ " \nIt's not that I don't know, just checking if you know ;)", req['lat'], req['lon']
 
 def area(box):
 	return distance(box[1], box[2], box[0], box[2])*distance(box[3], box[0], box[2], box[0])
