@@ -98,7 +98,7 @@ class ShoppingItem(models.Model):
 class User(models.Model):
     UserID = models.AutoField(db_column='UserID', primary_key=True)  # Field Name made lowercase.
     UserName = models.CharField(db_column='UserName', max_length=45, blank=True, null=True)  # Field Name made lowercase.
-    Userphonenumber = models.CharField(db_column='UserPhoneNumber', max_length=15, blank=True, null=False, unique=True)  # Field Name made lowercase.
+    Userphonenumber = models.CharField(db_column='UserPhoneNumber', max_length=40, blank=True, null=False, unique=True)  # Field Name made lowercase.
     Userlatitude = models.DecimalField(db_column='UserLatitude', max_digits=10, decimal_places=8, blank=True, null=True)  # Field Name made lowercase.
     Userlongitude = models.DecimalField(db_column='UserLongitude', max_digits=11, decimal_places=8, blank=True, null=True)  # Field Name made lowercase.
     UserState = models.IntegerField(default=99)
