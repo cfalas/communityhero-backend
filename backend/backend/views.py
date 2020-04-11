@@ -212,6 +212,7 @@ def sms_order(request):
 			order.save()
 
 		items = []
+		itemsWordpress = []
 		totalCost = 0
 		for product in b["content"].split('\n'):
 			product = product.lower()
@@ -226,7 +227,8 @@ def sms_order(request):
 			# TODO: Return cheapest/closest combination
 			if mindist<0.95:
 				items.append(mindistproduct.ProductBrandID.BrandName + ' ' + mindistproduct.ProductName)
-				price = Price.objects.filter(ProductID=mindistproduct).order_by('Price')[0]
+				itemsWordpress.append(mindistproduct.WordpressID)
+				price = Price.objects.filter(ProductID=mindistproduct, ShopID=Shop.objects.get(ShopID=4)).order_by('Price')[0]
 				totalCost+=price.Price
 				if "confirm" in b and b["confirm"]=="true":
 					item = OrderItems(OrderID=order, PriceID=price, Quantity=1)
@@ -242,6 +244,7 @@ def sms_order(request):
 		resp["items"] = items
 		resp["cost"] = totalCost
 		resp["status"]="ok"
+		resp['itemsWordpress'] = itemsWordpress
 		print(resp)
 		return JsonResponse(resp)
 
@@ -284,8 +287,7 @@ STATE = {
 
 	'registered': 99
 }
-LAT = {}
-LNG = {}
+
 YES_REPLIES = ['yes', 'yeah', 'correct', 'yep']
 NO_REPLIES = ['no', 'nope', 'wrong', 'nop']
 LIST_QUERIES = ['list', 'cart']
@@ -328,7 +330,9 @@ def chatbot(request):
 				r['content'] = 'Here\'s what I found:\n'
 				for item in range(len(req['items'])):
 					r['content']+=b['content'].split('\n')[item] + ": " + req['items'][item] + '\n'
-				r['content']+='That would cost you a total of €' + req['cost']
+				r['content']+='That would cost you a total of €' + req['cost'] + '\nYou can edit or complete your order here: http://192.168.30.179/wordpress/index.php/profile/alphamega/?fill_cart='
+				for item in range(len(req['items'])):
+					r['content']+=str(req['itemsWordpress'][item]) + ','
 		
 		r['from'] = 'bot'
 
