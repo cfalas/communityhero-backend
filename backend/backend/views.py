@@ -482,20 +482,30 @@ def messenger_chatbot(b):
 		elif u.UserState==STATE['registered']:
 			# Order received
 			print('Sending ORDER request using items', b)
-			req = create_order(b)
-			print('ORDER request response:', req)
-			r['content'] = 'Here\'s what I found:\n'
-			for item in range(len(req['items'])):
-				if req['items'][item] == 'not found':
-					r['content']+=b['content'].split('\n')[item] + ": " + req['items'][item] + '\n'
-				else:
-					r['content']+=req['items'][item] + '\n'
-			r['content']+='That would cost you a total of €' + str(req['cost']) + '\nYou can edit or complete your order here: http://192.168.30.179/wordpress/index.php/cart/?fill_cart='
-			for item in range(len(req['itemsWordpress'])):
-				r['content']+=str(req['itemsWordpress'][item])
-				if item!=len(req['items'])-1:
-					r['content']+=','
+			search_results = search_products(b)
+			print('Search results:',search_results)
+			carousel = []
+			for result in search_results:
+				carousel.append({"type": "postback", "title": result.ProductName, "payload": "ADD_CART|"+str(result.ProductID)})
+			PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
+			post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
+			response_msg = json.dumps({"recipient":{"id":u.Userphonenumber}, "message":{"attachment":{"type": "template", "payload":"generic", "elements":carousel}}})
+			status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
+			print('Message status', status)
 	
 	r['from'] = 'bot'
 
 	return r
+
+def search_products(product):
+	product = product.lower()
+	mindist = 100000000000
+	search_results = []
+	search_results_scores = []
+	for p in Product.objects.all():
+		search_results.append(p)
+		search_results_scores.append(nltk.jaccard_distance(set(nltk.ngrams(product, n=3)), set(nltk.ngrams(p.ProductTypeID.ProductTypeName.lower(), n=3)).union(set(nltk.ngrams(p.ProductName.lower(), n=3))).union(set(nltk.ngrams(p.ProductBrandID.BrandName.lower(), n=3))))/(p.ProductWeight))
+	
+	sorted_results = [e for _,e in sorted(zip(search_results_scores, search_results))]
+	return sorted_results[:3]
+
