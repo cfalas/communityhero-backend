@@ -517,6 +517,6 @@ def search_products(product):
 		search_results.append(p)
 		search_results_scores.append(decimal.Decimal(nltk.jaccard_distance(set(nltk.ngrams(product, n=3)), set(nltk.ngrams(p.ProductTypeID.ProductTypeName.lower(), n=3)).union(set(nltk.ngrams(p.ProductName.lower(), n=3))).union(set(nltk.ngrams(p.ProductBrandID.BrandName.lower(), n=3)))))/(p.ProductWeight))
 	
-	sorted_results = [e for _,e in sorted(zip(search_results_scores, search_results))]
-	return sorted_results[:3]
+	search_results.sort(key=dict(zip(search_results, search_results_scores)))
+	return search_results[:3]
 
