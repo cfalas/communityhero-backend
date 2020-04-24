@@ -11,6 +11,7 @@ import numpy as np
 import random
 import names
 import json
+import os
 import decimal
 import nltk
 import requests
@@ -420,7 +421,7 @@ def messenger(request, *args, **kwargs):
 
 def post_facebook_message(fbid, recevied_message):
 	# Remove all punctuations, lower case the text and split it based on space
-	PAGE_ACCESS_TOKEN = 'EAAj0jNiswxgBAO3xduZATZAFZAyWGlzT3ZB505szUr3vINC2cpaEtm3K2wGQztnPEZAG07ZAijSm9csUZARKKUHWb0TRyIoGvCeIAmZAZAOH3blI15hlu7nhQ5ROyvxlqIi2RVbRGSJi4rY6g1eZANUZCHSKLTZBrNq4RfZCP88oZA7p8A4ClEPYU8h7Be'
+	PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
 	user_details_url = "https://graph.facebook.com/v2.6/%s"%fbid 
 	user_details_params = {'fields':'first_name,last_name,profile_pic', 'access_token':PAGE_ACCESS_TOKEN} 
 	user_details = requests.get(user_details_url, user_details_params).json() 
