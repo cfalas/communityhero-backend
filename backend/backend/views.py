@@ -482,7 +482,7 @@ def messenger_chatbot(b):
 		elif u.UserState==STATE['registered']:
 			# Order received
 			print('Sending ORDER request using items', b)
-			search_results = search_products(b)
+			search_results = search_products(b['content'])
 			print('Search results:',search_results)
 			carousel = []
 			for result in search_results:
