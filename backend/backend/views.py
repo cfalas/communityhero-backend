@@ -294,7 +294,7 @@ def chatbot(request):
 		
 		r['from'] = 'bot'
 
-		return r
+		return JsonResponse(r)
 
 def user_exists(phone):
 	try:
