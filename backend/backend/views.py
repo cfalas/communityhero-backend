@@ -246,7 +246,7 @@ def sms_order(request):
 		resp["cost"] = totalCost
 		resp["status"]="ok"
 		resp['itemsWordpress'] = itemsWordpress
-		print(resp)
+		print('sms_order returning to chatbot:', resp)
 		return JsonResponse(resp)
 
 @api_view(['POST'])
@@ -285,7 +285,6 @@ def download_products(request, shop):
 STATE = {
 	'registering': 0,
 	'geocoding': 1,
-
 	'registered': 99
 }
 
@@ -325,11 +324,10 @@ def chatbot(request):
 					r['content'] = 'Sorry, didn\'t get you. Can you try once more?'
 			elif u.UserState==STATE['registered']:
 				# Order received
-				print(b)
-				print('here')
+				print('Sending ORDER request using items', b)
 				req = requests.post('https://rhubarb-cake-22341.herokuapp.com/api/v1/sms/order/', b)
 				req = req.json()
-				print(req)
+				print('ORDER request response:', req)
 				r['content'] = 'Here\'s what I found:\n'
 				for item in range(len(req['items'])):
 					if req['items'][item] == 'not found':
