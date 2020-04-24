@@ -448,4 +448,4 @@ def create_order(b):
 	resp["status"]="ok"
 	resp['itemsWordpress'] = itemsWordpress
 	print('sms_order returning to chatbot:', resp)
-	return JsonResponse(resp)
+	return resp
