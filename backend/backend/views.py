@@ -238,12 +238,12 @@ def sms_order(request):
 						item.save()
 					except IntegrityError:
 						print('Item already existed, increased quantity')
-						item = OrderItems.get(UserID=user, PriceID=price)
+						item = OrderItems.get(OrderID=order, PriceID=price)
 						item.Quantity+=1
 						item.save()
 				else:
 					try:
-						item = ShoppingItem(OrderID=order, PriceID=price, Quantity=1)
+						item = ShoppingItem(UserID=user, PriceID=price, Quantity=1)
 						item.save()
 					except IntegrityError:
 						print('Item already existed, increased quantity')
