@@ -199,7 +199,7 @@ def sms_order(request):
 	if request.method == 'POST':
 
 		b = request.data
-		return create_order(b)
+		return JsonResponse(create_order(b))
 
 
 @api_view(['POST'])
@@ -278,7 +278,7 @@ def chatbot(request):
 			elif u.UserState==STATE['registered']:
 				# Order received
 				print('Sending ORDER request using items', b)
-				req = create_order(b).json()
+				req = create_order(b)
 				print('ORDER request response:', req)
 				r['content'] = 'Here\'s what I found:\n'
 				for item in range(len(req['items'])):
@@ -294,7 +294,7 @@ def chatbot(request):
 		
 		r['from'] = 'bot'
 
-		return JsonResponse(r)
+		return r
 
 def user_exists(phone):
 	try:
