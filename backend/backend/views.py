@@ -198,69 +198,9 @@ def deliver_order(request, order):
 def sms_order(request):
 	if request.method == 'POST':
 
-		names = ProductType.objects.all()
 		b = request.data
-		print(b)
-		print(b["from"])
-		resp = {}
-		print(b["content"].split('\n'))
-		try:
-			user = User.objects.get(Userphonenumber=b['from'])
-		except User.DoesNotExist:
-			resp["status"]="user_error"
-			return JsonResponse(resp)
-		if "confirm" in b and b["confirm"]=="true":
-			order = PastOrder(UserID=user)
-			order.save()
+		return create_order(b)
 
-		items = []
-		itemsWordpress = []
-		totalCost = 0
-		for product in b["content"].split('\n'):
-			product = product.lower()
-			mindist = 100000000000
-			for p in Product.objects.all():
-				if decimal.Decimal(nltk.jaccard_distance(set(nltk.ngrams(product, n=3)), set(nltk.ngrams(p.ProductTypeID.ProductTypeName.lower(), n=3)).union(set(nltk.ngrams(p.ProductName.lower(), n=3))).union(set(nltk.ngrams(p.ProductBrandID.BrandName.lower(), n=3)))))/(p.ProductWeight) < mindist:
-					mindist = decimal.Decimal(nltk.jaccard_distance(set(nltk.ngrams(product, n=3)), set(nltk.ngrams(p.ProductTypeID.ProductTypeName.lower(), n=3)).union(set(nltk.ngrams(p.ProductName.lower(), n=3))).union(set(nltk.ngrams(p.ProductBrandID.BrandName.lower(), n=3)))))/p.ProductWeight
-					mindistproduct = p
-
-			print(mindistproduct.ProductName, mindist)
-			# TODO: Return cheapest/closest combination
-			if mindist<0.95 and len(Price.objects.filter(ProductID=mindistproduct).order_by('Price'))>0:
-				print(Price.objects.filter(ProductID=mindistproduct).order_by('Price')[0])
-				items.append(mindistproduct.ProductBrandID.BrandName + ' ' + mindistproduct.ProductName)
-				itemsWordpress.append(mindistproduct.WordpressID)
-				price = Price.objects.filter(ProductID=mindistproduct).order_by('Price')[0]
-				totalCost+=price.Price
-				if "confirm" in b and b["confirm"]=="true":
-					try:
-						item = OrderItems(OrderID=order, PriceID=price, Quantity=1)
-						item.save()
-					except IntegrityError:
-						print('Item already existed, increased quantity')
-						item = OrderItems.objects.get(OrderID=order, PriceID=price)
-						item.Quantity+=1
-						item.save()
-				else:
-					try:
-						item = ShoppingItem(UserID=user, PriceID=price, Quantity=1)
-						item.save()
-					except IntegrityError:
-						print('Item already existed, increased quantity')
-						item = ShoppingItem.objects.get(UserID=user, PriceID=price)
-						item.Quantity+=1
-						item.save()
-			else:
-				items.append('not found')
-			
-		resp = {}
-		resp['userID'] = user.UserID
-		resp["items"] = items
-		resp["cost"] = totalCost
-		resp["status"]="ok"
-		resp['itemsWordpress'] = itemsWordpress
-		print('sms_order returning to chatbot:', resp)
-		return JsonResponse(resp)
 
 @api_view(['POST'])
 def sms_register(request):
@@ -338,8 +278,7 @@ def chatbot(request):
 			elif u.UserState==STATE['registered']:
 				# Order received
 				print('Sending ORDER request using items', b)
-				req = requests.post('https://rhubarb-cake-22341.herokuapp.com/api/v1/sms/order/', b)
-				req = req.json()
+				req = create_order(b).json()
 				print('ORDER request response:', req)
 				r['content'] = 'Here\'s what I found:\n'
 				for item in range(len(req['items'])):
@@ -447,3 +386,66 @@ def post_facebook_message(fbid, recevied_message):
 	status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
 	print(status)
 
+def create_order(b):
+	names = ProductType.objects.all()
+	print(b)
+	print(b["from"])
+	resp = {}
+	print(b["content"].split('\n'))
+	try:
+		user = User.objects.get(Userphonenumber=b['from'])
+	except User.DoesNotExist:
+		resp["status"]="user_error"
+		return JsonResponse(resp)
+	if "confirm" in b and b["confirm"]=="true":
+		order = PastOrder(UserID=user)
+		order.save()
+
+	items = []
+	itemsWordpress = []
+	totalCost = 0
+	for product in b["content"].split('\n'):
+		product = product.lower()
+		mindist = 100000000000
+		for p in Product.objects.all():
+			if decimal.Decimal(nltk.jaccard_distance(set(nltk.ngrams(product, n=3)), set(nltk.ngrams(p.ProductTypeID.ProductTypeName.lower(), n=3)).union(set(nltk.ngrams(p.ProductName.lower(), n=3))).union(set(nltk.ngrams(p.ProductBrandID.BrandName.lower(), n=3)))))/(p.ProductWeight) < mindist:
+				mindist = decimal.Decimal(nltk.jaccard_distance(set(nltk.ngrams(product, n=3)), set(nltk.ngrams(p.ProductTypeID.ProductTypeName.lower(), n=3)).union(set(nltk.ngrams(p.ProductName.lower(), n=3))).union(set(nltk.ngrams(p.ProductBrandID.BrandName.lower(), n=3)))))/p.ProductWeight
+				mindistproduct = p
+
+		print(mindistproduct.ProductName, mindist)
+		# TODO: Return cheapest/closest combination
+		if mindist<0.95 and len(Price.objects.filter(ProductID=mindistproduct).order_by('Price'))>0:
+			print(Price.objects.filter(ProductID=mindistproduct).order_by('Price')[0])
+			items.append(mindistproduct.ProductBrandID.BrandName + ' ' + mindistproduct.ProductName)
+			itemsWordpress.append(mindistproduct.WordpressID)
+			price = Price.objects.filter(ProductID=mindistproduct).order_by('Price')[0]
+			totalCost+=price.Price
+			if "confirm" in b and b["confirm"]=="true":
+				try:
+					item = OrderItems(OrderID=order, PriceID=price, Quantity=1)
+					item.save()
+				except IntegrityError:
+					print('Item already existed, increased quantity')
+					item = OrderItems.objects.get(OrderID=order, PriceID=price)
+					item.Quantity+=1
+					item.save()
+			else:
+				try:
+					item = ShoppingItem(UserID=user, PriceID=price, Quantity=1)
+					item.save()
+				except IntegrityError:
+					print('Item already existed, increased quantity')
+					item = ShoppingItem.objects.get(UserID=user, PriceID=price)
+					item.Quantity+=1
+					item.save()
+		else:
+			items.append('not found')
+		
+	resp = {}
+	resp['userID'] = user.UserID
+	resp["items"] = items
+	resp["cost"] = totalCost
+	resp["status"]="ok"
+	resp['itemsWordpress'] = itemsWordpress
+	print('sms_order returning to chatbot:', resp)
+	return JsonResponse(resp)
