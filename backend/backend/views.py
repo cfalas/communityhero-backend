@@ -486,10 +486,21 @@ def messenger_chatbot(b):
 			print('Search results:',search_results)
 			carousel = []
 			for result in search_results:
-				carousel.append({"type": "postback", "title": result.ProductName, "payload": "ADD_CART|"+str(result.ProductID)})
+				carousel.append({
+					"title":result.ProductName,
+					"image_url": "https://www.webfx.com/blog/images/cdn.designinstruct.com/files/582-how-to-image-placeholders/generic-image-placeholder.png",
+					"subtitle": "insert price here",
+					"buttons": [
+						{
+							"type": "postback",
+							"title": "Add to Cart",
+							"payload": "ADD_CART|"+str(result.ProductID)
+						}
+					]
+				})
 			PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
 			post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
-			response_msg = json.dumps({"recipient":{"id":u.Userphonenumber}, "message":{"attachment":{"type": "template", "payload":"generic", "elements":carousel}}})
+			response_msg = json.dumps({"recipient":{"id":u.Userphonenumber}, "message":{"attachment":{"type": "template", "payload":"generic", "elements":{carousel}}}})
 			status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
 			print('Message status', status)
 	
