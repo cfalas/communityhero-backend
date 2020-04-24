@@ -377,14 +377,17 @@ def post_facebook_message(fbid, recevied_message):
 	user_details_params = {'fields':'first_name,last_name,profile_pic', 'access_token':PAGE_ACCESS_TOKEN} 
 	user_details = requests.get(user_details_url, user_details_params).json() 
 
-	r = requests.post('https://rhubarb-cake-22341.herokuapp.com/api/v1/chatbot', {"from": fbid, "content": recevied_message})
-	r = r.json()
-	print('Chatbot returned:', r)
+	r = messenger_chatbot({"from": fbid, "content": recevied_message})
+	if r==None:
+		print('Chatbot didn\'t return')
+	else:
+		r = r.json()
+		print('Chatbot returned:', r)
 
-	post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
-	response_msg = json.dumps({"recipient":{"id":fbid}, "message":{"text":r['content']}})
-	status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
-	print(status)
+		post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
+		response_msg = json.dumps({"recipient":{"id":fbid}, "message":{"text":r['content']}})
+		status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
+		print(status)
 
 def create_order(b):
 	names = ProductType.objects.all()
@@ -449,3 +452,51 @@ def create_order(b):
 	resp['itemsWordpress'] = itemsWordpress
 	print('sms_order returning to chatbot:', resp)
 	return resp
+
+
+def messenger_chatbot(b):
+	print(b)
+	r = {}
+	r['content'] = ''
+	if not user_exists(b['from']):
+		r['content'] =  'Welcome! I noticed you are new here. Why don\'t you go ahead and send me your address so that I can sign you up?'
+		u = User(Userphonenumber=b['from'], UserState=STATE['registering'])
+		u.save()
+	else:
+		u = User.objects.get(Userphonenumber=b['from'])
+		print(u.UserState)
+		if u.UserState==STATE['registering']:
+			r['content'], u.Userlatitude, u.Userlongitude = geocode(b)
+			u.UserState = STATE['geocoding']
+			u.save()
+		elif u.UserState==STATE['geocoding']:
+			if b['content'].lower() in YES_REPLIES:
+				r['content'] = 'You are now registered! Nice! You can send in orders at any time.'
+				u.UserState = STATE['registered']
+				u.save()
+			elif b['content'].lower() in NO_REPLIES:
+				r['content'] = 'Oh sorry about that :(\nCan you try that again with a more specific location?'
+				u.UserState = STATE['registering']
+				u.save()
+			else:
+				r['content'] = 'Sorry, didn\'t get you. Can you try once more?'
+		elif u.UserState==STATE['registered']:
+			# Order received
+			print('Sending ORDER request using items', b)
+			req = create_order(b)
+			print('ORDER request response:', req)
+			r['content'] = 'Here\'s what I found:\n'
+			for item in range(len(req['items'])):
+				if req['items'][item] == 'not found':
+					r['content']+=b['content'].split('\n')[item] + ": " + req['items'][item] + '\n'
+				else:
+					r['content']+=req['items'][item] + '\n'
+			r['content']+='That would cost you a total of €' + str(req['cost']) + '\nYou can edit or complete your order here: http://192.168.30.179/wordpress/index.php/cart/?fill_cart='
+			for item in range(len(req['itemsWordpress'])):
+				r['content']+=str(req['itemsWordpress'][item])
+				if item!=len(req['items'])-1:
+					r['content']+=','
+	
+	r['from'] = 'bot'
+
+	return r
