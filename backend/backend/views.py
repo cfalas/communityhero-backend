@@ -381,7 +381,6 @@ def post_facebook_message(fbid, recevied_message):
 	if r==None:
 		print('Chatbot didn\'t return')
 	else:
-		r = r.json()
 		print('Chatbot returned:', r)
 
 		post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
