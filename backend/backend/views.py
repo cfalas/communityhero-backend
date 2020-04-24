@@ -430,6 +430,7 @@ def post_facebook_message(fbid, recevied_message):
 
 	r = requests.post('https://rhubarb-cake-22341.herokuapp.com/api/v1/chatbot', {"from": fbid, "content": recevied_message})
 	r = r.json()
+	print('Chatbot returned:', r)
 
 	post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
 	response_msg = json.dumps({"recipient":{"id":fbid}, "message":{"text":r['content']}})
