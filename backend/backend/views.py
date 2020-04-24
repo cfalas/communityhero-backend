@@ -322,6 +322,8 @@ def chatbot(request):
 					r['content'] = 'Oh sorry about that :(\nCan you try that again with a more specific location?'
 					u.UserState = STATE['registering']
 					u.save()
+				else:
+					r['content'] = 'Sorry, didn\'t get you. Can you try once more?'
 			elif u.UserState==STATE['registered']:
 				# Order received
 				print(b)
