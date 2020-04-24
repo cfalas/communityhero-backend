@@ -7,6 +7,7 @@ from backend.models import *
 from backend.serializers import *
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
+from django.db import IntegrityError
 import numpy as np
 import random
 import names
@@ -232,11 +233,23 @@ def sms_order(request):
 				price = Price.objects.filter(ProductID=mindistproduct).order_by('Price')[0]
 				totalCost+=price.Price
 				if "confirm" in b and b["confirm"]=="true":
-					item = OrderItems(OrderID=order, PriceID=price, Quantity=1)
-					item.save()
+					try:
+						item = OrderItems(OrderID=order, PriceID=price, Quantity=1)
+						item.save()
+					except IntegrityError:
+						print('Item already existed, increased quantity')
+						item = OrderItems.get(UserID=user, PriceID=price)
+						item.Quantity+=1
+						item.save()
 				else:
-					item = ShoppingItem(UserID=user, PriceID=price, Quantity=1)
-					item.save()
+					try:
+						item = ShoppingItem(OrderID=order, PriceID=price, Quantity=1)
+						item.save()
+					except IntegrityError:
+						print('Item already existed, increased quantity')
+						item = ShoppingItem.get(UserID=user, PriceID=price)
+						item.Quantity+=1
+						item.save()
 			else:
 				items.append('not found')
 			
