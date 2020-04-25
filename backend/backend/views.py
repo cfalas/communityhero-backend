@@ -305,7 +305,11 @@ def user_exists(phone):
 		return False
 
 def geocode(msg):
-	req = requests.get("https://nominatim.openstreetmap.org/search/" + msg['content'].replace(" ", '%20') + "?format=json").json()[0]
+	req = requests.get("https://nominatim.openstreetmap.org/search/" + msg['content'].replace(" ", '%20') + "?format=json").json()
+	if len(req)>0:
+		req = req[0]
+	else:
+		return None, None, None
 	return "So you're telling me you live here? https://www.openstreetmap.org/?mlat=" + req['lat'] + "&mlon=" + req['lon']+ " \nIt's not that I don't know, just checking if you know ;)", req['lat'], req['lon']
 
 def area(box):
