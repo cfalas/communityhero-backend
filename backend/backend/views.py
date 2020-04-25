@@ -702,6 +702,7 @@ def checkout(fbid):
 			return total_price
 		
 		shops = Shop.objects.all()
+		user = User.objects.get(Userphonenumber=fbid)
 		close_shops = []
 		for shop in shops:
 			if shop.ShopLatitude==None or shop.ShopLongitude==None: continue
