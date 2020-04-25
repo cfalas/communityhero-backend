@@ -695,7 +695,7 @@ def checkout(fbid):
 	def find_cheapest_store():
 		RADIUS = 5
 		def total_price_at_shop(shop):
-			cart = ShoppingItem.objects.filter(Userphonenumber=fbid)
+			cart = ShoppingItem.objects.filter(UserID__Userphonenumber=fbid)
 			total_price = decimal.Decimal(0)
 			for item in cart:
 				price = Price.objects.get(ProductID=item.PriceID.ProductID, ShopID=shop)
