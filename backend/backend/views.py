@@ -556,7 +556,7 @@ def search_products(product):
 	results_returned = []
 	all_results = {}
 	for a,b in sorted_indexes:
-		if(a<1.1*mindist and a<0.96): results_returned.append(search_results[b])
+		if(a<1.17*mindist and a<0.96): results_returned.append(search_results[b])
 		all_results[get_full_product_name(search_results[b].ProductID)] = a
 	print(all_results)
 	print(f'============ {product} FINISHED =============')
