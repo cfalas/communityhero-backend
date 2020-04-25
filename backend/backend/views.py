@@ -17,28 +17,24 @@ import decimal
 import nltk
 import requests
 
-from math import radians, cos, sin, asin, sqrt 
-def distance(lat1, lon1, lat2, lon2): 
-	  
-	# The math module contains a function named 
-	# radians which converts from degrees to radians. 
-	lon1 = radians(lon1) 
-	lon2 = radians(lon2) 
-	lat1 = radians(lat1) 
-	lat2 = radians(lat2) 
-	   
-	# Haversine formula  
-	dlon = lon2 - lon1  
-	dlat = lat2 - lat1 
+from math import radians, cos, sin, asin, sqrt
+def distance(lat1, lon1, lat2, lon2):
+	# The math module contains a function named
+	# radians which converts from degrees to radians.
+	lon1 = radians(lon1)
+	lon2 = radians(lon2)
+	lat1 = radians(lat1)
+	lat2 = radians(lat2)
+
+	# Haversine formula
+	dlon = lon2 - lon1
+	dlat = lat2 - lat1
 	a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
-  
-	c = 2 * asin(sqrt(a))  
-	 
-	# Radius of earth in kilometers. Use 3956 for miles 
+	c = 2 * asin(sqrt(a))
+	# Radius of earth in kilometers. Use 3956 for miles
 	r = 6371
-	   
-	# calculate the result 
-	return(c * r) 
+	# calculate the result
+	return c * r
 
 @api_view(['GET'])
 def category_collection(request):
@@ -174,14 +170,14 @@ def create_data(request):
 			num_of_items = random.randint(1, len(available_items)-1)
 
 			items = random.sample(list(available_items), num_of_items)
-			
+
 			order = PastOrder(UserID=user, OrderDelivered=False)
 			order.save()
 			for item in items:
 				order_item = OrderItems(OrderID=order, PriceID=item, Quantity=random.randint(1, 5))
 				order_item.save()
-			
-		
+
+
 		return Response("Done")
 
 
@@ -370,6 +366,9 @@ def messenger(request, *args, **kwargs):
 						payload = message['message']['quick_reply']['payload']
 						if "CHOOSE_STORE" in payload:
 							choose_shop(message['sender']['id'], payload.split('|')[1])
+						if 'CHECKOUT_YES' in payload:
+							checkout(message['sender']['id'])
+
 					else:
 						# Assuming the sender only sends text. Non-text messages like stickers, audio, pictures
 						# are sent as attachments and must be handled accordingly. 
@@ -387,7 +386,8 @@ def messenger(request, *args, **kwargs):
 					elif 'REMOVE_CART' in payload:
 						remove_cart(message['sender']['id'], payload.split('|')[1])
 					elif 'CHECKOUT' in payload:
-						checkout(message['sender']['id'])
+						show_cart(message['sender']['id'])
+						confirm('CHECKOUT', 'Are you sure you want to checkout?')
 						
 
 
@@ -506,12 +506,12 @@ def messenger_chatbot(b):
 		print(u.UserState)
 		if u.UserState==STATE['registering']:
 			r['content'], u.Userlatitude, u.Userlongitude = geocode(b)
-			if r['content']==None:
+			if r['content'] == None:
 				r['content'] = 'Sorry, I didn\'t find any results. Can you try again with a different query?'
 			else:
 				u.UserState = STATE['geocoding']
 				u.save()
-		elif u.UserState==STATE['geocoding']:
+		elif u.UserState == STATE['geocoding']:
 			if b['content'].lower() in YES_REPLIES:
 				u.UserState = STATE['choose_supermarket']
 				u.save()
@@ -522,10 +522,10 @@ def messenger_chatbot(b):
 				u.save()
 			else:
 				r['content'] = 'Sorry, didn\'t get you. Can you try once more?'
-		elif u.UserState==STATE['choose_supermarket']:
+		elif u.UserState == STATE['choose_supermarket']:
 			send_fb_msg(u.Userphonenumber, 'You still haven\'t chosen your preferred supermarket. Please choose one from the list below', quick_replies=shops_around_user(u))
 			return None
-		elif u.UserState==STATE['registered']:
+		elif u.UserState == STATE['registered']:
 			# Order received
 			print('Sending ORDER request using items', b)
 			for query in b['content'].split('\n'):
@@ -564,7 +564,7 @@ def messenger_chatbot(b):
 
 			# Prevents from trying to send another empty message
 			return None
-	
+
 	r['from'] = 'bot'
 
 	return r
@@ -579,12 +579,12 @@ def search_products(product):
 		search_results_scores.append(decimal.Decimal(nltk.jaccard_distance(set(nltk.ngrams(product, n=3)), set(nltk.ngrams(p.ProductTypeID.ProductTypeName.lower(), n=3)).union(set(nltk.ngrams(p.ProductName.lower(), n=3))).union(set(nltk.ngrams(p.ProductBrandID.BrandName.lower(), n=3)))))/(p.ProductWeight))
 	sorted_indexes = sorted(zip(search_results_scores, range(len(search_results))))
 	mindist = float(sorted_indexes[0][0])
-	if mindist>0.95:
+	if mindist > 0.95:
 		return []
 	results_returned = []
 	all_results = {}
 	for a,b in sorted_indexes:
-		if(a<1.17*mindist and a<0.96): results_returned.append(search_results[b])
+		if a < 1.17 * mindist and a < 0.96: results_returned.append(search_results[b])
 		all_results[get_full_product_name(search_results[b].ProductID)] = a
 	print(all_results)
 	print(f'============ {product} FINISHED =============')
@@ -595,22 +595,21 @@ def show_cart(fbid):
 	print('Show cart requested')
 	cart_contents = ShoppingItem.objects.filter(UserID=User.objects.get(Userphonenumber=fbid))
 	carousel = []
-	if len(cart_contents)>0:
+	if len(cart_contents) > 0:
 		send_fb_msg(fbid, 'Here is your cart: ')
 		for result in cart_contents:
 			minp,maxp = min_max_price(result.PriceID.ProductID)
 			carousel.append({
-				"title":get_full_product_name(result.PriceID.ProductID.ProductID),
-				"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.PriceID.ProductID.ProductID)+".jpg",
-				"subtitle": 'Usually ranges from €' + str(minp) + ' to €' + str(maxp) + '\nQuantity: ' + str(result.Quantity),
-				"buttons": [
-					{
-						"type": "postback",
-						"title": "Remove from cart",
-						"payload": "REMOVE_CART|"+str(result.PriceID.ProductID.ProductID)
-					}
-				]
-			})
+							"title":get_full_product_name(result.PriceID.ProductID.ProductID),
+							"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.PriceID.ProductID.ProductID)+".jpg",
+							"subtitle": 'Usually ranges from €' + str(minp) + ' to €' + str(maxp) + '\nQuantity: ' + str(result.Quantity),
+							"buttons": [{
+										"type": "postback",
+										"title": "Remove from cart",
+										"payload": "REMOVE_CART|"+str(result.PriceID.ProductID.ProductID)
+								}
+							]
+						})
 			print('Cart contents: ', str(result.PriceID.ProductID))
 		PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
 		post_message_url = 'https://graph.facebook.com/v6.0/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
@@ -722,16 +721,19 @@ def checkout(fbid):
 				minprice_store = shop.ShopID
 		return minprice_store
 				
-			
-
+	# For the given user (fbid), the contents of the cart are made into an order from the shop specified
+	# Returns: Total Cost	
 	def checkout_shop(shop):
+		total_cost = 0
 		cart = ShoppingItem.objects.filter(UserID__Userphonenumber=fbid)
 		order = PastOrder(UserID=User.objects.get(Userphonenumber=fbid))
 		order.save()
 		for item in cart:
 			o = OrderItems(OrderID=order, PriceID=Price.objects.get(ShopID=shop, ProductID=item.PriceID.ProductID), Notes=item.Notes, Quantity=item.Quantity)
+			total_cost += item.Quantity * Price.objects.get(ShopID=shop, ProductID=item.PriceID.ProductID).Price
 			o.save()
 		cart = ShoppingItem.objects.filter(UserID__Userphonenumber=fbid).delete()
+		return total_cost
 	
 	u = User.objects.get(Userphonenumber=fbid)
 	if u.UserShopID==None:
@@ -740,7 +742,19 @@ def checkout(fbid):
 			return
 	else:
 		store = u.UserShopID
-	checkout_shop(store)
-	send_fb_msg(fbid, 'Your ordered was placed! We\'ll send you a message when someone claims it.')
+	price = checkout_shop(store)
+	send_fb_msg(fbid, 'Your order was placed! The total cost is {price}. We\'ll send you a message when someone claims it.')
 	
 
+def confirm(user, tag, message):
+	send_fb_msg(user, message, quick_replies=[
+		{
+			"content_type": "text",
+			"title": "Yes",
+			"payload": tag+"_YES"
+		}, {
+			"content_type": "text",
+			"title": "No",
+			"payload": tag+"_NO"
+		},
+	])
