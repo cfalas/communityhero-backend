@@ -493,38 +493,6 @@ def messenger_chatbot(b):
 				u.UserState = STATE['choose_supermarket']
 				u.save()
 				payload = {
-					"payload": {
-						"template_type": "button",
-						"text": "Which store in your region do you prefer?",
-						"buttons":[
-							{
-								"type": "postback",
-								"title": "Alfamega",
-								"payload": "CHOOSE_STORE|1"
-							},
-							{
-								"type": "postback",
-								"title": "Papantoniou",
-								"payload": "CHOOSE_STORE|1"
-							},
-							{
-								"type": "postback",
-								"title": "I don't mind / Cheapest",
-								"payload": "CHOOSE_STORE|-1"
-							},
-						]
-					}
-				}
-				send_fb_template(u.Userphonenumber, payload)
-			elif b['content'].lower() in NO_REPLIES:
-				r['content'] = 'Oh sorry about that :(\nCan you try that again with a more specific location?'
-				u.UserState = STATE['registering']
-				u.save()
-			else:
-				r['content'] = 'Sorry, didn\'t get you. Can you try once more?'
-		elif u.UserState==STATE['choose_supermarket']:
-			payload = {
-				"payload": {
 					"template_type": "button",
 					"text": "Which store in your region do you prefer?",
 					"buttons":[
@@ -545,6 +513,34 @@ def messenger_chatbot(b):
 						},
 					]
 				}
+				send_fb_template(u.Userphonenumber, payload)
+			elif b['content'].lower() in NO_REPLIES:
+				r['content'] = 'Oh sorry about that :(\nCan you try that again with a more specific location?'
+				u.UserState = STATE['registering']
+				u.save()
+			else:
+				r['content'] = 'Sorry, didn\'t get you. Can you try once more?'
+		elif u.UserState==STATE['choose_supermarket']:
+			payload = {
+				"template_type": "button",
+				"text": "Which store in your region do you prefer?",
+				"buttons":[
+					{
+						"type": "postback",
+						"title": "Alfamega",
+						"payload": "CHOOSE_STORE|1"
+					},
+					{
+						"type": "postback",
+						"title": "Papantoniou",
+						"payload": "CHOOSE_STORE|1"
+					},
+					{
+						"type": "postback",
+						"title": "I don't mind / Cheapest",
+						"payload": "CHOOSE_STORE|-1"
+					},
+				]
 			}
 			send_fb_template(u.Userphonenumber, payload)
 
