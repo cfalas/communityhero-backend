@@ -191,6 +191,8 @@ def deliver_order(request, order):
 		print(request.data)
 		obj = PastOrder.objects.get(OrderID=order)
 		obj.OrderDelivered = True
+		if(obj.UserID.UserMessenger==True):
+			send_fb_msg(obj.UserID.Userphonenumber, 'Your order has been claimed by a volunteer! 🥳')
 		obj.save()
 		return Response("Done")
 
@@ -200,7 +202,6 @@ def sms_order(request):
 
 		b = request.data
 		return JsonResponse(create_order(b))
-
 
 @api_view(['POST'])
 def sms_register(request):
