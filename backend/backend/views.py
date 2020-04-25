@@ -547,9 +547,11 @@ def search_products(product):
 		search_results_scores.append(decimal.Decimal(nltk.jaccard_distance(set(nltk.ngrams(product, n=3)), set(nltk.ngrams(p.ProductTypeID.ProductTypeName.lower(), n=3)).union(set(nltk.ngrams(p.ProductName.lower(), n=3))).union(set(nltk.ngrams(p.ProductBrandID.BrandName.lower(), n=3)))))/(p.ProductWeight))
 	sorted_indexes = sorted(zip(search_results_scores, range(len(search_results))))
 	mindist = float(sorted_indexes[0][0])
+	if mindist>0.95:
+		return []
 	results_returned = []
 	for a,b in sorted_indexes:
-		if(a<1.1*mindist): results_returned.append(search_results[b])
+		if(a<1.1*mindist and a<0.96): results_returned.append(search_results[b])
 
 	# TODO: Only show top 3 results
 	# search_results.sort(key=dict(zip(search_results, search_results_scores)))
@@ -584,6 +586,8 @@ def min_max_price(product_id):
 	price_list = Price.objects.filter(ProductID=product_id).order_by('Price')
 	min_price = price_list.first()
 	max_price = price_list.last()
+	if min_price==None:
+		return None
 	return (min_price.Price, max_price.Price)
 
 def add_cart(fbid, pid):
