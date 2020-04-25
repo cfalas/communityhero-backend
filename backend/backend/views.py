@@ -539,7 +539,7 @@ def search_products(product):
 		search_results.append(p)
 		search_results_scores.append(decimal.Decimal(nltk.jaccard_distance(set(nltk.ngrams(product, n=3)), set(nltk.ngrams(p.ProductTypeID.ProductTypeName.lower(), n=3)).union(set(nltk.ngrams(p.ProductName.lower(), n=3))).union(set(nltk.ngrams(p.ProductBrandID.BrandName.lower(), n=3)))))/(p.ProductWeight))
 	sorted_indexes = sorted(zip(search_results_scores, range(len(search_results))))
-	results_returned = [ search_results[e] for e in sorted_indexes[:3] ]
+	results_returned = [ search_results[e] for _,e in sorted_indexes[:3] ]
 
 	# TODO: Only show top 3 results
 	# search_results.sort(key=dict(zip(search_results, search_results_scores)))
