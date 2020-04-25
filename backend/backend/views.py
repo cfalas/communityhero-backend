@@ -371,6 +371,8 @@ def messenger(request, *args, **kwargs):
 						show_cart(message['sender']['id'])
 					elif 'HELP' in payload:
 						send_fb_msg(message['sender']['id'], 'Hi! I\'m the Community Hero Facebook Messenger bot. I can help you find items that you need to shop, and deliver them  to you by volunteers. Once finished with the registration process, you can send anything that you need to add to your cart. A list of options will be returned, and by clicking \'Add to Cart\' below the option that you like, that specific product will be added to your cart.')
+					elif 'ADD_CART' in payload:
+						add_cart(fbid, payload.split('|')[1])
 						
 
 
@@ -571,3 +573,16 @@ def min_max_price(product_id):
 	min_price = price_list.first()
 	max_price = price_list.last()
 	return (min_price.Price, max_price.Price)
+
+def add_cart(fbid, pid):
+	print(Price.objects.filter(ProductID=pid).order_by('Price')[0])
+	price = Price.objects.filter(ProductID=mindistproduct).order_by('Price')[0]
+	try:
+		item = ShoppingItem(UserID=fbid, PriceID=price, Quantity=1)
+		item.save()
+	except IntegrityError:
+		print('Item already existed, increased quantity')
+		item = ShoppingItem.objects.get(UserID=fbid, PriceID=price)
+		item.Quantity+=1
+		item.save()
+	
