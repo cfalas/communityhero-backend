@@ -16,6 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url
+from django.conf.urls.static import static
+from django.conf import settings
 import backend.views
 
 urlpatterns = [
@@ -42,4 +44,4 @@ urlpatterns = [
     url(r'^api/v1/cart/(?P<user>[0-9]+)/$', backend.views.cart_user),
     url(r'^api/v1/cart/confirm/(?P<user>[0-9]+)/$', backend.views.cart_order),
     url(r'^messenger', backend.views.messenger),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
