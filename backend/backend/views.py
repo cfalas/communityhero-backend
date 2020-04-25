@@ -679,12 +679,15 @@ def shops_around_user(user):
 	return btns
 
 def choose_shop(fbid, shop):
+	u = User.objects.get(Userphonenumber=fbid)
 	if shop=='-1':
 		print('No shop preferred by user', fbid)
 	else:
-		u = User.objects.get(Userphonenumber=fbid)
 		u.UserShopID = Shop.objects.get(ShopID=shop)
-		send_fb_msg(fbid, 'You are now registered! Nice! You can send in orders at any time.')
+	
+	u.UserState=STATE['registered']
+	u.save()
+	send_fb_msg(fbid, 'You are now registered! Nice! You can send in orders at any time.')
 
 def checkout(fbid):
 	def find_cheapest_store():
