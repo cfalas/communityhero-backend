@@ -547,7 +547,7 @@ def show_cart(fbid):
 	send_fb_msg(fbid, 'Here is your cart: ')
 
 def min_max_price(product_id):
-	product_list = Price.objects.filter(ProductID=product_id).order_by('price')
+	price_list = Price.objects.filter(ProductID=product_id).order_by('price')
 	min_price = price_list.first()
 	max_price = price_list.last()
 	return (min_price, max_price)
