@@ -47,6 +47,7 @@ class Price(models.Model):
 
     class Meta:
         db_table = 'Price'
+        unique_together = ('ShopID', 'ProductID')
 
 class Product(models.Model):
     ProductID = models.AutoField(db_column='ProductID', primary_key=True)  # Field Name made lowercase.
