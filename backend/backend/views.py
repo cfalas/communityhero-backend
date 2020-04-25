@@ -360,11 +360,11 @@ def messenger(request, *args, **kwargs):
 				# This might be delivery, optin, postback for other events 
 				if 'message' in message:
 					# Print the message to the terminal
+					print(message)
 					if 'quick_reply' in message['message']:
 						payload = message['message']['quick_reply']['payload']
 						if "CHOOSE_SHOP" in payload:
 							choose_shop(message['sender']['id'], payload.split('|')[1])
-					print(message)
 					else:
 						# Assuming the sender only sends text. Non-text messages like stickers, audio, pictures
 						# are sent as attachments and must be handled accordingly. 
