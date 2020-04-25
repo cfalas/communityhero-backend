@@ -366,9 +366,11 @@ def messenger(request, *args, **kwargs):
 				elif 'postback' in message:
 					payload = message['postback']['payload']
 					if 'REGISTER' in payload:
-						messenger_chatbot({'from': message['sender']['id'], 'content': ""})
+						messenger_chatbot({'from': message['sender']['id'], 'content': "Hi"})
 					elif 'SHOWCART' in payload:
 						show_cart(message['sender']['id'])
+					elif 'HELP' in payload:
+						send_fb_msg(message['sender']['id'], 'Hi! I\'m the Community Hero Facebook Messenger bot. I can help you find items that you need to shop, and deliver them  to you by volunteers. Once finished with the registration process, you can send anything that you need to add to your cart. A list of options will be returned, and by clicking \'Add to Cart\' below the option that you like, that specific product will be added to your cart.')
 						
 
 
@@ -536,10 +538,12 @@ def search_products(product):
 	for p in Product.objects.all():
 		search_results.append(p)
 		search_results_scores.append(decimal.Decimal(nltk.jaccard_distance(set(nltk.ngrams(product, n=3)), set(nltk.ngrams(p.ProductTypeID.ProductTypeName.lower(), n=3)).union(set(nltk.ngrams(p.ProductName.lower(), n=3))).union(set(nltk.ngrams(p.ProductBrandID.BrandName.lower(), n=3)))))/(p.ProductWeight))
-	
+	sorted_indexes = sorted(zip(search_results_scores, range(len(search_results))))
+	results_returned = [ search_results[e] for e in sorted_indexes[:3] ]
+
 	# TODO: Only show top 3 results
 	# search_results.sort(key=dict(zip(search_results, search_results_scores)))
-	return search_results[:3]
+	return results_returned
 
 def show_cart(fbid):
 	print('Show cart requested')
