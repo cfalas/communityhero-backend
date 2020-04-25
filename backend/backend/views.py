@@ -545,6 +545,7 @@ def search_products(product):
 	product = product.lower()
 	search_results = []
 	search_results_scores = []
+	print(f'============ {product} STARTED =============')
 	for p in Product.objects.all():
 		search_results.append(p)
 		search_results_scores.append(decimal.Decimal(nltk.jaccard_distance(set(nltk.ngrams(product, n=3)), set(nltk.ngrams(p.ProductTypeID.ProductTypeName.lower(), n=3)).union(set(nltk.ngrams(p.ProductName.lower(), n=3))).union(set(nltk.ngrams(p.ProductBrandID.BrandName.lower(), n=3)))))/(p.ProductWeight))
@@ -555,6 +556,8 @@ def search_products(product):
 	results_returned = []
 	for a,b in sorted_indexes:
 		if(a<1.1*mindist and a<0.96): results_returned.append(search_results[b])
+		print(get_full_product_name(search_results[b].ProductID), a)
+	print(f'============ {product} FINISHED =============')
 
 	# TODO: Only show top 3 results
 	# search_results.sort(key=dict(zip(search_results, search_results_scores)))
