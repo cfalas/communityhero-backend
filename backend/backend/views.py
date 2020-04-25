@@ -373,6 +373,8 @@ def messenger(request, *args, **kwargs):
 						send_fb_msg(message['sender']['id'], 'Hi! I\'m the Community Hero Facebook Messenger bot. I can help you find items that you need to shop, and deliver them  to you by volunteers. Once finished with the registration process, you can send anything that you need to add to your cart. A list of options will be returned, and by clicking \'Add to Cart\' below the option that you like, that specific product will be added to your cart.')
 					elif 'ADD_CART' in payload:
 						add_cart(message['sender']['id'], payload.split('|')[1])
+					elif 'REMOVE_CART' in payload:
+						remove_cart(message['sender']['id'], payload.split('|')[1])
 						
 
 
@@ -588,6 +590,10 @@ def add_cart(fbid, pid):
 		item.Quantity+=1
 		item.save()
 		send_fb_msg(fbid, get_full_product_name(pid) + " was already in cart, increased quanitity")
+
+def remove_cart(fbid, pid):
+	item = ShoppingItem.objects.get(PriceID__ProductID__ProductID=pid).delete()
+	send_fb_msg(fbid, get_full_product_name(pid) + " removed from cart.")
 
 def get_full_product_name(pid):
 	p = Product.objects.get(ProductID=pid)
