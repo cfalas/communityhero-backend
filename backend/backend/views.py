@@ -387,7 +387,7 @@ def messenger(request, *args, **kwargs):
 						remove_cart(message['sender']['id'], payload.split('|')[1])
 					elif 'CHECKOUT' in payload:
 						show_cart(message['sender']['id'])
-						confirm('CHECKOUT', 'Are you sure you want to checkout?')
+						confirm(message['sender']['id'], 'CHECKOUT', 'Are you sure you want to checkout?')
 						
 
 
