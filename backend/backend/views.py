@@ -562,7 +562,7 @@ def show_cart(fbid):
 		})
 	PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
 	post_message_url = 'https://graph.facebook.com/v6.0/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
-	response_msg = json.dumps({"recipient":{"id":u.Userphonenumber}, "message":{"attachment":{"type": "template", "payload":{"template_type": "generic", "elements":carousel}}}})
+	response_msg = json.dumps({"recipient":{"id":fbid}, "message":{"attachment":{"type": "template", "payload":{"template_type": "generic", "elements":carousel}}}})
 	status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
 
 def min_max_price(product_id):
