@@ -503,8 +503,11 @@ def messenger_chatbot(b):
 		print(u.UserState)
 		if u.UserState==STATE['registering']:
 			r['content'], u.Userlatitude, u.Userlongitude = geocode(b)
-			u.UserState = STATE['geocoding']
-			u.save()
+			if r['content']==None:
+				r['content'] = 'Sorry, I didn\'t find any results. Can you try again with a different query?'
+			else:
+				u.UserState = STATE['geocoding']
+				u.save()
 		elif u.UserState==STATE['geocoding']:
 			if b['content'].lower() in YES_REPLIES:
 				u.UserState = STATE['choose_supermarket']
@@ -589,28 +592,31 @@ def search_products(product):
 
 def show_cart(fbid):
 	print('Show cart requested')
-	send_fb_msg(fbid, 'Here is your cart: ')
 	cart_contents = ShoppingItem.objects.filter(UserID=User.objects.get(Userphonenumber=fbid))
 	carousel = []
-	for result in cart_contents:
-		minp,maxp = min_max_price(result.PriceID.ProductID)
-		carousel.append({
-			"title":get_full_product_name(result.PriceID.ProductID.ProductID),
-			"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.PriceID.ProductID.ProductID)+".jpg",
-			"subtitle": 'Usually ranges from €' + str(minp) + ' to €' + str(maxp) + '\nQuantity: ' + str(result.Quantity),
-			"buttons": [
-				{
-					"type": "postback",
-					"title": "Remove from cart",
-					"payload": "REMOVE_CART|"+str(result.PriceID.ProductID.ProductID)
-				}
-			]
-		})
-		print('Cart contents: ', str(result.PriceID.ProductID))
-	PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
-	post_message_url = 'https://graph.facebook.com/v6.0/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
-	response_msg = json.dumps({"recipient":{"id":fbid}, "message":{"attachment":{"type": "template", "payload":{"template_type": "generic", "elements":carousel}}}})
-	status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
+	if len(cart_contents)>0:
+		send_fb_msg(fbid, 'Here is your cart: ')
+		for result in cart_contents:
+			minp,maxp = min_max_price(result.PriceID.ProductID)
+			carousel.append({
+				"title":get_full_product_name(result.PriceID.ProductID.ProductID),
+				"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.PriceID.ProductID.ProductID)+".jpg",
+				"subtitle": 'Usually ranges from €' + str(minp) + ' to €' + str(maxp) + '\nQuantity: ' + str(result.Quantity),
+				"buttons": [
+					{
+						"type": "postback",
+						"title": "Remove from cart",
+						"payload": "REMOVE_CART|"+str(result.PriceID.ProductID.ProductID)
+					}
+				]
+			})
+			print('Cart contents: ', str(result.PriceID.ProductID))
+		PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
+		post_message_url = 'https://graph.facebook.com/v6.0/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
+		response_msg = json.dumps({"recipient":{"id":fbid}, "message":{"attachment":{"type": "template", "payload":{"template_type": "generic", "elements":carousel}}}})
+		status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
+	else:
+		send_fb_msg(fbid, 'Your cart is empty :(\nYou can add something to your cart by sending it as a message')
 
 def min_max_price(product_id):
 	price_list = Price.objects.filter(ProductID=product_id).order_by('Price')
