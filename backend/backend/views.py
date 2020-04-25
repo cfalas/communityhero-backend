@@ -498,7 +498,7 @@ def messenger_chatbot(b):
 	r['content'] = ''
 	if not user_exists(b['from']):
 		r['content'] =  'Welcome! I noticed you are new here. Why don\'t you go ahead and send me your address so that I can sign you up?'
-		u = User(Userphonenumber=b['from'], UserState=STATE['registering'])
+		u = User(Userphonenumber=b['from'], UserState=STATE['registering'], UserMessenger=True)
 		u.save()
 	else:
 		u = User.objects.get(Userphonenumber=b['from'])
@@ -740,5 +740,6 @@ def checkout(fbid):
 	else:
 		store = u.UserShopID
 	checkout_shop(store)
+	send_fb_msg(fbid, 'Your ordered was placed! We\'ll send you a message when someone claims it.')
 	
 
