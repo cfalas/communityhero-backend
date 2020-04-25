@@ -550,16 +550,16 @@ def show_cart(fbid):
 	cart_contents = ShoppingItem.objects.filter(UserID=User.objects.get(Userphonenumber=fbid))
 	carousel = []
 	for result in cart_contents:
-		minp,maxp = min_max_price(result.ProductID)
+		minp,maxp = min_max_price(result.PriceID.ProductID)
 		carousel.append({
 			"title":result.ProductName,
-			"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.ProductID)+".jpg",
+			"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.PriceID.ProductID)+".jpg",
 			"subtitle": 'Usually ranges from ' + str(minp) + '-' + str(maxp),
 			"buttons": [
 				{
 					"type": "postback",
 					"title": "Remove from cart",
-					"payload": "REMOVE_CART|"+str(result.ProductID)
+					"payload": "REMOVE_CART|"+str(result.PriceID.ProductID)
 				}
 			]
 		})
