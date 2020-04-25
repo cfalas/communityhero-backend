@@ -395,8 +395,6 @@ def post_facebook_message(fbid, recevied_message):
 		print('Chatbot returned:', r)
 		send_fb_msg(fbid, r['content'])
 
-
-
 def send_fb_msg(fbid, msg):
 	print('Sending message', msg, 'to', fbid)
 	PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
@@ -404,7 +402,6 @@ def send_fb_msg(fbid, msg):
 	response_msg = json.dumps({"recipient":{"id":fbid}, "message":{"text":msg}})
 	status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
 	print('FB Response:', status)
-
 
 def create_order(b):
 	names = ProductType.objects.all()
@@ -470,7 +467,6 @@ def create_order(b):
 	print('sms_order returning to chatbot:', resp)
 	return resp
 
-
 def messenger_chatbot(b):
 	print(b)
 	r = {}
@@ -504,10 +500,11 @@ def messenger_chatbot(b):
 			print('Search results:',search_results)
 			carousel = []
 			for result in search_results:
+				minp,maxp = min_max_price(result)
 				carousel.append({
 					"title":result.ProductName,
 					"image_url": "https://www.webfx.com/blog/images/cdn.designinstruct.com/files/582-how-to-image-placeholders/generic-image-placeholder.png",
-					"subtitle": "insert price here",
+					"subtitle": 'Usually ranges from ' + str(minp) + '-' + str(maxp),
 					"buttons": [
 						{
 							"type": "postback",
@@ -548,3 +545,9 @@ def search_products(product):
 def show_cart(fbid):
 	print('Show cart requested')
 	send_fb_msg(fbid, 'Here is your cart: ')
+
+def min_max_price(product_id):
+	product_list = Price.objects.filter(ProductID=product_id).order_by('price')
+	min_price = price_list.first()
+	max_price = price_list.last()
+	return (min_price, max_price)
