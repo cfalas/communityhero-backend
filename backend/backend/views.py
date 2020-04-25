@@ -693,6 +693,7 @@ def choose_shop(fbid, shop):
 
 def checkout(fbid):
 	def find_cheapest_store():
+		RADIUS = 5
 		def total_price_at_shop(shop):
 			cart = ShoppingItem.objects.filter(Userphonenumber=fbid)
 			total_price = decimal.Decimal(0)
