@@ -578,11 +578,11 @@ def add_cart(fbid, pid):
 	print(Price.objects.filter(ProductID=pid).order_by('Price')[0])
 	price = Price.objects.filter(ProductID=pid).order_by('Price')[0]
 	try:
-		item = ShoppingItem(UserID=User.objects.get(UserID=fbid), PriceID=price, Quantity=1)
+		item = ShoppingItem(Userphonenumber=User.objects.get(UserID=fbid), PriceID=price, Quantity=1)
 		item.save()
 	except IntegrityError:
 		print('Item already existed, increased quantity')
-		item = ShoppingItem.objects.get(UserID=fbid, PriceID=price)
+		item = ShoppingItem.objects.get(Userphonenumber=User.objects.get(UserID=fbid), PriceID=price)
 		item.Quantity+=1
 		item.save()
 	
