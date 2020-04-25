@@ -372,7 +372,7 @@ def messenger(request, *args, **kwargs):
 					elif 'HELP' in payload:
 						send_fb_msg(message['sender']['id'], 'Hi! I\'m the Community Hero Facebook Messenger bot. I can help you find items that you need to shop, and deliver them  to you by volunteers. Once finished with the registration process, you can send anything that you need to add to your cart. A list of options will be returned, and by clicking \'Add to Cart\' below the option that you like, that specific product will be added to your cart.')
 					elif 'ADD_CART' in payload:
-						add_cart(fbid, payload.split('|')[1])
+						add_cart(message['sender']['id'], payload.split('|')[1])
 						
 
 
