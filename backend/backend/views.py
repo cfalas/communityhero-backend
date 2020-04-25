@@ -365,9 +365,10 @@ def messenger(request, *args, **kwargs):
 						if "CHOOSE_SHOP" in payload:
 							choose_shop(message['sender']['id'], payload.split('|')[1])
 					print(message)
-					# Assuming the sender only sends text. Non-text messages like stickers, audio, pictures
-					# are sent as attachments and must be handled accordingly. 
-					post_facebook_message(message['sender']['id'], message['message']['text'])  
+					else:
+						# Assuming the sender only sends text. Non-text messages like stickers, audio, pictures
+						# are sent as attachments and must be handled accordingly. 
+						post_facebook_message(message['sender']['id'], message['message']['text'])  
 				elif 'postback' in message:
 					payload = message['postback']['payload']
 					if 'REGISTER' in payload:
