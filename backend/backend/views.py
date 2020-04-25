@@ -547,7 +547,7 @@ def search_products(product):
 def show_cart(fbid):
 	print('Show cart requested')
 	send_fb_msg(fbid, 'Here is your cart: ')
-	cart_contents = ShoppingItem.objects.filter(UserID=fbid)
+	cart_contents = ShoppingItem.objects.filter(UserID=User.objects.get(Userphonenumber=fbid))
 	carousel = []
 	for result in cart_contents:
 		minp,maxp = min_max_price(result)
