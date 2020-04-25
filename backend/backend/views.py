@@ -554,9 +554,11 @@ def search_products(product):
 	if mindist>0.95:
 		return []
 	results_returned = []
+	all_results = {}
 	for a,b in sorted_indexes:
 		if(a<1.1*mindist and a<0.96): results_returned.append(search_results[b])
-		print(get_full_product_name(search_results[b].ProductID), a)
+		all_results[get_full_product_name(search_results[b].ProductID)] = a
+	print(all_results)
 	print(f'============ {product} FINISHED =============')
 
 	# TODO: Only show top 3 results
