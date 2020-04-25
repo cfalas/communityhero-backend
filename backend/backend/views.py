@@ -506,10 +506,15 @@ def messenger_chatbot(b):
 				carousel = []
 				for result in search_results:
 					minp,maxp = min_max_price(result)
+					subtitle_string = ''
+					if minp==None:
+						subtitle_string = 'Not available currently'
+					else:
+						subtitle_string = 'Usually ranges from €' + str(minp) + ' to €' + str(maxp)
 					carousel.append({
 						"title":get_full_product_name(result.ProductID),
 						"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.ProductID)+".jpg",
-						"subtitle": 'Usually ranges from €' + str(minp) + ' to €' + str(maxp),
+						"subtitle": subtitle_string,
 						"buttons": [
 							{
 								"type": "postback",
@@ -544,7 +549,7 @@ def search_products(product):
 	mindist = float(sorted_indexes[0][0])
 	results_returned = []
 	for a,b in sorted_indexes:
-		if(a<1.2*mindist): results_returned.append(search_results[b])
+		if(a<1.1*mindist): results_returned.append(search_results[b])
 
 	# TODO: Only show top 3 results
 	# search_results.sort(key=dict(zip(search_results, search_results_scores)))
