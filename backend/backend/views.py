@@ -360,6 +360,10 @@ def messenger(request, *args, **kwargs):
 				# This might be delivery, optin, postback for other events 
 				if 'message' in message:
 					# Print the message to the terminal
+					if 'quick_reply' in message['message']:
+						payload = message['message']['quick_reply']['payload']
+						if "CHOOSE_SHOP" in payload:
+							choose_shop(message['sender']['id'], payload.split('|')[1])
 					print(message)
 					# Assuming the sender only sends text. Non-text messages like stickers, audio, pictures
 					# are sent as attachments and must be handled accordingly. 
@@ -498,7 +502,6 @@ def messenger_chatbot(b):
 			u.save()
 		elif u.UserState==STATE['geocoding']:
 			if b['content'].lower() in YES_REPLIES:
-				r['content'] = 'You are now registered! Nice! You can send in orders at any time.'
 				u.UserState = STATE['choose_supermarket']
 				u.save()
 				send_fb_msg(u.Userphonenumber, 'Which store in your region do you prefer?', quick_replies=shops_around_user(u))
@@ -665,3 +668,12 @@ def shops_around_user(user):
 		"payload": "CHOOSE_STORE|-1"
 	})
 	return btns
+
+def choose_shop(fbid, shop):
+	if shop=='-1':
+		print('No shop preferred by user', fbid)
+	else:
+		u = User.objects.get(Userphonenumber=fbid)
+		u.UserShopID = Shop.objects.get(ShopID=shop)
+		send_fb_msg(fbid, 'You are now registered! Nice! You can send in orders at any time.')
+
