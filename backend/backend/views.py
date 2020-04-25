@@ -503,7 +503,7 @@ def messenger_chatbot(b):
 				minp,maxp = min_max_price(result)
 				carousel.append({
 					"title":result.ProductName,
-					"image_url": "https://www.webfx.com/blog/images/cdn.designinstruct.com/files/582-how-to-image-placeholders/generic-image-placeholder.png",
+					"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.ProductID)+".jpg",
 					"subtitle": 'Usually ranges from ' + str(minp) + '-' + str(maxp),
 					"buttons": [
 						{
@@ -545,9 +545,28 @@ def search_products(product):
 def show_cart(fbid):
 	print('Show cart requested')
 	send_fb_msg(fbid, 'Here is your cart: ')
+	cart_contents = ShoppingItem.objects.filter(UserID=fbid)
+	for result in cart_contents:
+		minp,maxp = min_max_price(result)
+		carousel.append({
+			"title":result.ProductName,
+			"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.ProductID)+".jpg",
+			"subtitle": 'Usually ranges from ' + str(minp) + '-' + str(maxp),
+			"buttons": [
+				{
+					"type": "postback",
+					"title": "Remove from cart",
+					"payload": "REMOVE_CART|"+str(result.ProductID)
+				}
+			]
+		})
+	PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
+	post_message_url = 'https://graph.facebook.com/v6.0/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
+	response_msg = json.dumps({"recipient":{"id":u.Userphonenumber}, "message":{"attachment":{"type": "template", "payload":{"template_type": "generic", "elements":carousel}}}})
+	status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
 
 def min_max_price(product_id):
 	price_list = Price.objects.filter(ProductID=product_id).order_by('Price')
 	min_price = price_list.first()
 	max_price = price_list.last()
-	return (min_price, max_price)
+	return (min_price.Price, max_price.Price)
