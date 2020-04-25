@@ -569,7 +569,7 @@ def show_cart(fbid):
 	status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
 
 def min_max_price(product_id):
-	price_list = Price.objects.filter(ProductID=Product.objects.get(ProductID=product_id)).order_by('Price')
+	price_list = Price.objects.filter(ProductID=product_id).order_by('Price')
 	min_price = price_list.first()
 	max_price = price_list.last()
 	return (min_price.Price, max_price.Price)
