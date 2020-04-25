@@ -535,14 +535,16 @@ def messenger_chatbot(b):
 
 def search_products(product):
 	product = product.lower()
-	mindist = 100000000000
 	search_results = []
 	search_results_scores = []
 	for p in Product.objects.all():
 		search_results.append(p)
 		search_results_scores.append(decimal.Decimal(nltk.jaccard_distance(set(nltk.ngrams(product, n=3)), set(nltk.ngrams(p.ProductTypeID.ProductTypeName.lower(), n=3)).union(set(nltk.ngrams(p.ProductName.lower(), n=3))).union(set(nltk.ngrams(p.ProductBrandID.BrandName.lower(), n=3)))))/(p.ProductWeight))
 	sorted_indexes = sorted(zip(search_results_scores, range(len(search_results))))
-	results_returned = [ search_results[e] for _,e in sorted_indexes[:3] ]
+	mindist = sorted_indexes[0][0]
+	results_returned = []
+	for a,b in sorted_indexes:
+		if(a<1.2*mindist): results_returned.append(search_results[b])
 
 	# TODO: Only show top 3 results
 	# search_results.sort(key=dict(zip(search_results, search_results_scores)))
@@ -585,7 +587,7 @@ def add_cart(fbid, pid):
 	try:
 		item = ShoppingItem(UserID=User.objects.get(Userphonenumber=fbid), PriceID=price, Quantity=1)
 		item.save()
-		send_fb_msg(fbid, str(Product.objects.get(ProductID=pid).ProductName)+" added to cart!")
+		send_fb_msg(fbid, get_full_product_name(pid) + " added to cart!")
 	except IntegrityError:
 		print('Item already existed, increased quantity')
 		item = ShoppingItem.objects.get(UserID=User.objects.get(Userphonenumber=fbid), PriceID=price)
