@@ -503,33 +503,36 @@ def messenger_chatbot(b):
 			for query in b['content'].split('\n'):
 				search_results = search_products(query)
 				print('Search results:',search_results)
-				carousel = []
-				for result in search_results:
-					minp,maxp = min_max_price(result)
-					subtitle_string = ''
-					if minp==None:
-						subtitle_string = 'Not available currently'
-					else:
-						subtitle_string = 'Usually ranges from €' + str(minp) + ' to €' + str(maxp)
-					carousel.append({
-						"title":get_full_product_name(result.ProductID),
-						"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.ProductID)+".jpg",
-						"subtitle": subtitle_string,
-						"buttons": [
-							{
-								"type": "postback",
-								"title": "Add to Cart",
-								"payload": "ADD_CART|"+str(result.ProductID)
-							}
-						]
-					})
-				PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
-				send_fb_msg(u.Userphonenumber, "Here's what I found for " + query + ":")
-				post_message_url = 'https://graph.facebook.com/v6.0/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
-				response_msg = json.dumps({"recipient":{"id":u.Userphonenumber}, "message":{"attachment":{"type": "template", "payload":{"template_type": "generic", "elements":carousel}}}})
-				status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
-				print("Sending to FB:", response_msg)
-				print('Message status', status)
+				if len(search_results)>0:
+					carousel = []
+					for result in search_results:
+						minp,maxp = min_max_price(result)
+						subtitle_string = ''
+						if minp==None:
+							subtitle_string = 'Not available currently'
+						else:
+							subtitle_string = 'Usually ranges from €' + str(minp) + ' to €' + str(maxp)
+						carousel.append({
+							"title":get_full_product_name(result.ProductID),
+							"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.ProductID)+".jpg",
+							"subtitle": subtitle_string,
+							"buttons": [
+								{
+									"type": "postback",
+									"title": "Add to Cart",
+									"payload": "ADD_CART|"+str(result.ProductID)
+								}
+							]
+						})
+					PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
+					send_fb_msg(u.Userphonenumber, "Here's what I found for " + query + ":")
+					post_message_url = 'https://graph.facebook.com/v6.0/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
+					response_msg = json.dumps({"recipient":{"id":u.Userphonenumber}, "message":{"attachment":{"type": "template", "payload":{"template_type": "generic", "elements":carousel}}}})
+					status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
+					print("Sending to FB:", response_msg)
+					print('Message status', status)
+				else:
+					send_fb_msg(u.Userphonenumber, "I didn't find anything for " + query + " :(")
 
 			# Prevents from trying to send another empty message
 			return None
