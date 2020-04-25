@@ -102,6 +102,7 @@ class User(models.Model):
     Userlatitude = models.DecimalField(db_column='UserLatitude', max_digits=10, decimal_places=8, blank=True, null=True)  # Field Name made lowercase.
     Userlongitude = models.DecimalField(db_column='UserLongitude', max_digits=11, decimal_places=8, blank=True, null=True)  # Field Name made lowercase.
     UserState = models.IntegerField(default=99)
+    UserShopID = models.ForeignKey(Shop, models.DO_NOTHING, blank=True, null=True)
     class Meta:
         db_table = 'User'
 

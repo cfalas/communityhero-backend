@@ -238,6 +238,7 @@ def download_products(request, shop):
 STATE = {
 	'registering': 0,
 	'geocoding': 1,
+	'choose_supermarket': 2,
 	'registered': 99
 }
 
@@ -489,14 +490,65 @@ def messenger_chatbot(b):
 		elif u.UserState==STATE['geocoding']:
 			if b['content'].lower() in YES_REPLIES:
 				r['content'] = 'You are now registered! Nice! You can send in orders at any time.'
-				u.UserState = STATE['registered']
+				u.UserState = STATE['choose_supermarket']
 				u.save()
+				payload = {
+					"payload": {
+						"template_type": "button",
+						"text": "Which store in your region do you prefer?",
+						"buttons":[
+							{
+								"type": "postback",
+								"title": "Alfamega",
+								"payload": "CHOOSE_STORE|1"
+							},
+							{
+								"type": "postback",
+								"title": "Papantoniou",
+								"payload": "CHOOSE_STORE|1"
+							},
+							{
+								"type": "postback",
+								"title": "I don't mind / Cheapest",
+								"payload": "CHOOSE_STORE|-1"
+							},
+						]
+					}
+				}
+				send_fb_template(u.Userphonenumber, payload)
 			elif b['content'].lower() in NO_REPLIES:
 				r['content'] = 'Oh sorry about that :(\nCan you try that again with a more specific location?'
 				u.UserState = STATE['registering']
 				u.save()
 			else:
 				r['content'] = 'Sorry, didn\'t get you. Can you try once more?'
+		elif u.UserState==STATE['choose_supermarket']:
+			payload = {
+				"payload": {
+					"template_type": "button",
+					"text": "Which store in your region do you prefer?",
+					"buttons":[
+						{
+							"type": "postback",
+							"title": "Alfamega",
+							"payload": "CHOOSE_STORE|1"
+						},
+						{
+							"type": "postback",
+							"title": "Papantoniou",
+							"payload": "CHOOSE_STORE|1"
+						},
+						{
+							"type": "postback",
+							"title": "I don't mind / Cheapest",
+							"payload": "CHOOSE_STORE|-1"
+						},
+					]
+				}
+			}
+			send_fb_template(u.Userphonenumber, payload)
+
+			return None
 		elif u.UserState==STATE['registered']:
 			# Order received
 			print('Sending ORDER request using items', b)
@@ -619,3 +671,11 @@ def remove_cart(fbid, pid):
 def get_full_product_name(pid):
 	p = Product.objects.get(ProductID=pid)
 	return str(p.ProductBrandID.BrandName) + ' ' + str(p.ProductName)
+
+def send_fb_template(fbid, payload):
+	PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
+	post_message_url = 'https://graph.facebook.com/v6.0/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
+	response_msg = json.dumps({"recipient":{"id":fbid}, "message":{"attachment":{"type": "template", "payload":payload}}})
+	status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
+	print("Sending to FB:", response_msg)
+	print('Message status', status)
