@@ -552,7 +552,7 @@ def show_cart(fbid):
 	for result in cart_contents:
 		minp,maxp = min_max_price(result.PriceID.ProductID)
 		carousel.append({
-			"title":result.ProductName,
+			"title":result.PriceID.ProductID.ProductName,
 			"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.PriceID.ProductID)+".jpg",
 			"subtitle": 'Usually ranges from ' + str(minp) + '-' + str(maxp),
 			"buttons": [
