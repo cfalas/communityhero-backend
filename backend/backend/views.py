@@ -586,8 +586,6 @@ def search_products(product):
 	print(all_results)
 	print(f'============ {product} FINISHED =============')
 
-	# TODO: Only show top 3 results
-	# search_results.sort(key=dict(zip(search_results, search_results_scores)))
 	return results_returned
 
 def show_cart(fbid):
@@ -687,4 +685,52 @@ def choose_shop(fbid, shop):
 		u = User.objects.get(Userphonenumber=fbid)
 		u.UserShopID = Shop.objects.get(ShopID=shop)
 		send_fb_msg(fbid, 'You are now registered! Nice! You can send in orders at any time.')
+
+def checkout(fbid):
+	def find_cheapest_store():
+		def total_price_at_shop(shop):
+			cart = ShoppingItem.objects.filter(Userphonenumber=fbid)
+			price = decimal.Decimal(0)
+			for item in cart:
+				price+=Price.objects.get(ProductID=item.PriceID.ProductID, ShopID=shop)
+			return price
+		
+		shops = Shop.objects.all()
+		close_shops = []
+		for shop in shops:
+			if shop.ShopLatitude==None or shop.ShopLongitude==None: continue
+			if distance(shop.ShopLatitude, shop.ShopLongitude, user.Userlatitude, user.Userlongitude)<RADIUS:
+				close_shops.append(shop)
+
+		if len(close_shops)==0:
+			send_fb_msg(fbid, 'No stores near you were found :(\nCould not proceed with checkout')
+			return None
+		minprice = total_price_at_shop(close_shops[0].ShopID)
+		minprice_store = close_shops[0].ShopID
+		for shop in close_shops:
+			if total_price_at_shop(shop)<minprice:
+				minprice = total_price_at_shop(shop.ShopID)
+				minprice_store = shop.ShopID
+		return minprice_store
+				
+			
+
+	def checkout_shop(shop):
+		cart = ShoppingItem.objects.filter(Userphonenumber=fbid)
+		order = PastOrder(UserID=User.objects.get(Userphonenumber=fbid))
+		order.save()
+		for item in cart:
+			o = OrderItems(OrderID=order, PriceID=Price.objects.get(ShopID=shop, ProductID=item.PriceID.ProductID), Notes=item.Notes, Quantity=item.Quantity)
+			o.save()
+		cart = ShoppingItem.objects.filter(Userphonenumber=fbid).delete()
+	
+	u = User.objects.get(Userphonenumber=fbid)
+	if u.UserShopID==None:
+		store = find_cheapest_store()
+		if store==None:
+			return
+	else:
+		store = u.UserShopID
+	checkout_shop(store)
+	
 
