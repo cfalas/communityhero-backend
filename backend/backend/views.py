@@ -492,28 +492,11 @@ def messenger_chatbot(b):
 				r['content'] = 'You are now registered! Nice! You can send in orders at any time.'
 				u.UserState = STATE['choose_supermarket']
 				u.save()
-				payload = {
+				send_fb_template(u.Userphonenumber, {
 					"template_type": "button",
 					"text": "Which store in your region do you prefer?",
-					"buttons":[
-						{
-							"type": "postback",
-							"title": "Alfamega",
-							"payload": "CHOOSE_STORE|1"
-						},
-						{
-							"type": "postback",
-							"title": "Papantoniou",
-							"payload": "CHOOSE_STORE|1"
-						},
-						{
-							"type": "postback",
-							"title": "I don't mind / Cheapest",
-							"payload": "CHOOSE_STORE|-1"
-						},
-					]
-				}
-				send_fb_template(u.Userphonenumber, payload)
+					"buttons": shops_around_user(u)
+				})
 			elif b['content'].lower() in NO_REPLIES:
 				r['content'] = 'Oh sorry about that :(\nCan you try that again with a more specific location?'
 				u.UserState = STATE['registering']
@@ -521,28 +504,12 @@ def messenger_chatbot(b):
 			else:
 				r['content'] = 'Sorry, didn\'t get you. Can you try once more?'
 		elif u.UserState==STATE['choose_supermarket']:
-			payload = {
+			send_fb_msg(u.Userphonenumber, 'You still haven\'t chosen your preferred supermarket. Please choose one from the list below')
+			send_fb_template(u.Userphonenumber, {
 				"template_type": "button",
 				"text": "Which store in your region do you prefer?",
-				"buttons":[
-					{
-						"type": "postback",
-						"title": "Alfamega",
-						"payload": "CHOOSE_STORE|1"
-					},
-					{
-						"type": "postback",
-						"title": "Papantoniou",
-						"payload": "CHOOSE_STORE|1"
-					},
-					{
-						"type": "postback",
-						"title": "I don't mind / Cheapest",
-						"payload": "CHOOSE_STORE|-1"
-					},
-				]
-			}
-			send_fb_template(u.Userphonenumber, payload)
+				"buttons":shops_around_user(u)
+			})
 
 			return None
 		elif u.UserState==STATE['registered']:
@@ -675,3 +642,28 @@ def send_fb_template(fbid, payload):
 	status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
 	print("Sending to FB:", response_msg)
 	print('Message status', status)
+
+def shops_around_user(user):
+	RADIUS = 5
+	shops = Shop.objects.all()
+	result_shops = []
+	for shop in shops:
+		if distance(user.Userlatitude, user.Userlongitude, user.Userlatitude, user.Userlongitude)<RADIUS:
+			result_shops.append(shop)
+
+	print(result_shops)
+	s = []
+	for s in result_shops:
+		s.append({
+			"type": "postback",
+			"title": s.ShopName,
+			"payload": f"CHOOSE_STORE|{s.ShopID}"
+		})
+	s.append({
+		"type": "postback",
+		"title": "I don't mind / Cheapest",
+		"payload": "CHOOSE_STORE|-1"
+	})
+	return s
+	
+	
