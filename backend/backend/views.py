@@ -362,7 +362,11 @@ def messenger(request, *args, **kwargs):
 					print(message)
 					# Assuming the sender only sends text. Non-text messages like stickers, audio, pictures
 					# are sent as attachments and must be handled accordingly. 
-					post_facebook_message(message['sender']['id'], message['message']['text'])    
+					post_facebook_message(message['sender']['id'], message['message']['text'])  
+				elif 'postback' in message:
+					print('Add to Cart:', message['postback']['payload'])
+
+
 	else:
 		if request.GET['hub.verify_token'] == "communityhero":
 			return HttpResponse(request.GET['hub.challenge'])
