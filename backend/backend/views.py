@@ -563,6 +563,7 @@ def show_cart(fbid):
 				}
 			]
 		})
+		print('Cart contents: ', str(result.PriceID.ProductID))
 	PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
 	post_message_url = 'https://graph.facebook.com/v6.0/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
 	response_msg = json.dumps({"recipient":{"id":fbid}, "message":{"attachment":{"type": "template", "payload":{"template_type": "generic", "elements":carousel}}}})
