@@ -591,4 +591,4 @@ def add_cart(fbid, pid):
 
 def get_full_product_name(pid):
 	p = Product.objects.get(ProductID=pid)
-	return str(p.BrandID.BrandName) + ' ' + str(p.ProductName)
+	return str(p.ProductBrandID.BrandName) + ' ' + str(p.ProductName)
