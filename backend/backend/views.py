@@ -652,18 +652,18 @@ def shops_around_user(user):
 			result_shops.append(shop)
 
 	print(result_shops)
-	s = []
+	btns = []
 	for s in result_shops:
-		s.append({
+		btns.append({
 			"type": "postback",
 			"title": s.ShopName,
 			"payload": f"CHOOSE_STORE|{s.ShopID}"
 		})
-	s.append({
+	btns.append({
 		"type": "postback",
 		"title": "I don't mind / Cheapest",
 		"payload": "CHOOSE_STORE|-1"
 	})
-	return s
+	return btns
 	
 	
