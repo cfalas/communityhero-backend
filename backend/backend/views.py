@@ -730,7 +730,7 @@ def checkout(fbid):
 		for item in cart:
 			o = OrderItems(OrderID=order, PriceID=Price.objects.get(ShopID=shop, ProductID=item.PriceID.ProductID), Notes=item.Notes, Quantity=item.Quantity)
 			o.save()
-		cart = ShoppingItem.objects.filter(Userphonenumber=fbid).delete()
+		cart = ShoppingItem.objects.filter(UserID__Userphonenumber=fbid).delete()
 	
 	u = User.objects.get(Userphonenumber=fbid)
 	if u.UserShopID==None:
