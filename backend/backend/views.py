@@ -364,7 +364,12 @@ def messenger(request, *args, **kwargs):
 					# are sent as attachments and must be handled accordingly. 
 					post_facebook_message(message['sender']['id'], message['message']['text'])  
 				elif 'postback' in message:
-					print('Add to Cart:', message['postback']['payload'])
+					payload = message['postback']['payload']
+					if 'REGISTER' in payload:
+						messenger_chatbot({'from': message['sender']['id'], 'content': ""})
+					elif 'SHOWCART' in payload:
+						show_cart(message['sender']['id'])
+						
 
 
 	else:
@@ -386,11 +391,18 @@ def post_facebook_message(fbid, recevied_message):
 		print('Chatbot didn\'t return')
 	else:
 		print('Chatbot returned:', r)
+		send_fb_msg(fbid, r['content'])
 
-		post_message_url = 'https://graph.facebook.com/v6.0/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
-		response_msg = json.dumps({"recipient":{"id":fbid}, "message":{"text":r['content']}})
-		status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
-		print(status)
+
+
+def send_fb_msg(fbid, msg):
+	print('Sending message', msg, 'to', fbid)
+	PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
+	post_message_url = 'https://graph.facebook.com/v6.0/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
+	response_msg = json.dumps({"recipient":{"id":fbid}, "message":{"text":msg}})
+	status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
+	print('FB Response:', status)
+
 
 def create_order(b):
 	names = ProductType.objects.all()
@@ -529,3 +541,6 @@ def search_products(product):
 	# search_results.sort(key=dict(zip(search_results, search_results_scores)))
 	return search_results[:3]
 
+def show_cart(fbid):
+	print('Show cart requested')
+	send_fb_msg(fbid, 'Here is your cart: ')
