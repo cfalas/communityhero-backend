@@ -142,21 +142,21 @@ def order_by_id(request):
 @api_view(['GET'])
 def create_data(request):
 	if request.method == 'GET':
-		probability = 0.8
+		probability = 1
 		mean_price = 4
 		stdev = 1
-		shops = Shop.objects.filter(ShopTypeID=1)
+		shops = Shop.objects.all()
 		products = Product.objects.all()
 		for shop in shops:
 			for product in products:
-				if product.ProductTypeID.ProductTypeID in [8,9,10,37]:
-					print(shop, product)
-					if random.random() < probability:
-						print('saving')
-						price = Price(ShopID=shop, ProductID=product, Price=np.random.normal(mean_price, stdev))
-						price.save()
+				print(shop, product)
+				price = Price(ShopID=shop, ProductID=product, Price=np.random.normal(mean_price, stdev))
+				try:
+					price.save()
+				except:
+					pass
 
-		num_users = 100
+		num_users = 0
 
 		for j in range(num_users):
 			phonenumber = '99' + ''.join(random.choice("0123456789") for _ in range(6))
@@ -385,6 +385,8 @@ def messenger(request, *args, **kwargs):
 						add_cart(message['sender']['id'], payload.split('|')[1])
 					elif 'REMOVE_CART' in payload:
 						remove_cart(message['sender']['id'], payload.split('|')[1])
+					elif 'CHECKOUT' in payload:
+						checkout(message['sender']['id'])
 						
 
 
@@ -693,10 +695,11 @@ def checkout(fbid):
 	def find_cheapest_store():
 		def total_price_at_shop(shop):
 			cart = ShoppingItem.objects.filter(Userphonenumber=fbid)
-			price = decimal.Decimal(0)
+			total_price = decimal.Decimal(0)
 			for item in cart:
-				price+=Price.objects.get(ProductID=item.PriceID.ProductID, ShopID=shop)
-			return price
+				price = Price.objects.get(ProductID=item.PriceID.ProductID, ShopID=shop)
+				total_price+= price.Price * item.Quantity
+			return total_price
 		
 		shops = Shop.objects.all()
 		close_shops = []
