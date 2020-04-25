@@ -541,7 +541,7 @@ def search_products(product):
 		search_results.append(p)
 		search_results_scores.append(decimal.Decimal(nltk.jaccard_distance(set(nltk.ngrams(product, n=3)), set(nltk.ngrams(p.ProductTypeID.ProductTypeName.lower(), n=3)).union(set(nltk.ngrams(p.ProductName.lower(), n=3))).union(set(nltk.ngrams(p.ProductBrandID.BrandName.lower(), n=3)))))/(p.ProductWeight))
 	sorted_indexes = sorted(zip(search_results_scores, range(len(search_results))))
-	mindist = sorted_indexes[0][0]
+	mindist = float(sorted_indexes[0][0])
 	results_returned = []
 	for a,b in sorted_indexes:
 		if(a<1.2*mindist): results_returned.append(search_results[b])
