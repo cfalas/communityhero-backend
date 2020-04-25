@@ -506,7 +506,7 @@ def messenger_chatbot(b):
 			for result in search_results:
 				minp,maxp = min_max_price(result)
 				carousel.append({
-					"title":get_full_product_name(result),
+					"title":get_full_product_name(result.ProductID),
 					"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.ProductID)+".jpg",
 					"subtitle": 'Usually ranges from €' + str(minp) + ' to €' + str(maxp),
 					"buttons": [
