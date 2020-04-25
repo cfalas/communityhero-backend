@@ -724,7 +724,7 @@ def checkout(fbid):
 			
 
 	def checkout_shop(shop):
-		cart = ShoppingItem.objects.filter(Userphonenumber=fbid)
+		cart = ShoppingItem.objects.filter(UserID__Userphonenumber=fbid)
 		order = PastOrder(UserID=User.objects.get(Userphonenumber=fbid))
 		order.save()
 		for item in cart:
