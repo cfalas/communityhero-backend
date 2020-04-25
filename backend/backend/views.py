@@ -400,11 +400,20 @@ def post_facebook_message(fbid, recevied_message):
 		print('Chatbot returned:', r)
 		send_fb_msg(fbid, r['content'])
 
-def send_fb_msg(fbid, msg):
+def send_fb_msg(fbid, msg, quick_replies=None):
 	print('Sending message', msg, 'to', fbid)
 	PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
 	post_message_url = 'https://graph.facebook.com/v6.0/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
-	response_msg = json.dumps({"recipient":{"id":fbid}, "message":{"text":msg}})
+	if quick_replies==None: response_msg = json.dumps({"recipient":{"id":fbid}, "message":{"text":msg}})
+	else:
+		response_msg = json.dumps({
+			"recipient": {"id": fbid},
+			"messaging_type": "RESPONSE",
+			"message":{
+				"text": msg,
+				"quick_replies": quick_replies
+			}
+		})
 	status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
 	print('FB Response:', status)
 
@@ -492,11 +501,7 @@ def messenger_chatbot(b):
 				r['content'] = 'You are now registered! Nice! You can send in orders at any time.'
 				u.UserState = STATE['choose_supermarket']
 				u.save()
-				send_fb_template(u.Userphonenumber, {
-					"template_type": "button",
-					"text": "Which store in your region do you prefer?",
-					"buttons": shops_around_user(u)
-				})
+				send_fb_msg(u.Userphonenumber, 'Which store in your region do you prefer?', quick_replies=shops_around_user(u))
 			elif b['content'].lower() in NO_REPLIES:
 				r['content'] = 'Oh sorry about that :(\nCan you try that again with a more specific location?'
 				u.UserState = STATE['registering']
@@ -504,13 +509,7 @@ def messenger_chatbot(b):
 			else:
 				r['content'] = 'Sorry, didn\'t get you. Can you try once more?'
 		elif u.UserState==STATE['choose_supermarket']:
-			send_fb_msg(u.Userphonenumber, 'You still haven\'t chosen your preferred supermarket. Please choose one from the list below')
-			send_fb_template(u.Userphonenumber, {
-				"template_type": "button",
-				"text": "Which store in your region do you prefer?",
-				"buttons":shops_around_user(u)
-			})
-
+			send_fb_msg(u.Userphonenumber, 'You still haven\'t chosen your preferred supermarket. Please choose one from the list below', quick_replies=shops_around_user(u))
 			return None
 		elif u.UserState==STATE['registered']:
 			# Order received
@@ -648,22 +647,21 @@ def shops_around_user(user):
 	shops = Shop.objects.all()
 	result_shops = []
 	for shop in shops:
-		if distance(user.Userlatitude, user.Userlongitude, user.Userlatitude, user.Userlongitude)<RADIUS:
+		if shop.ShopLatitude==None or shop.ShopLongitude==None: continue
+		if distance(shop.ShopLatitude, shop.ShopLongitude, user.Userlatitude, user.Userlongitude)<RADIUS:
 			result_shops.append(shop)
 
-	print(result_shops)
+	print('Shops available:', result_shops)
 	btns = []
 	for s in result_shops:
 		btns.append({
-			"type": "postback",
+			"content_type": "text",
 			"title": s.ShopName,
 			"payload": f"CHOOSE_STORE|{s.ShopID}"
 		})
 	btns.append({
-		"type": "postback",
+		"content_type": "text",
 		"title": "I don't mind / Cheapest",
 		"payload": "CHOOSE_STORE|-1"
 	})
 	return btns
-	
-	
