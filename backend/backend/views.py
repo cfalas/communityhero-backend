@@ -504,9 +504,9 @@ def messenger_chatbot(b):
 			for result in search_results:
 				minp,maxp = min_max_price(result)
 				carousel.append({
-					"title":result.ProductName,
+					"title":get_full_product_name(result),
 					"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.ProductID)+".jpg",
-					"subtitle": 'Usually ranges from ' + str(minp) + '-' + str(maxp),
+					"subtitle": 'Usually ranges from €' + str(minp) + ' to €' + str(maxp),
 					"buttons": [
 						{
 							"type": "postback",
@@ -587,7 +587,7 @@ def add_cart(fbid, pid):
 		item = ShoppingItem.objects.get(UserID=User.objects.get(Userphonenumber=fbid), PriceID=price)
 		item.Quantity+=1
 		item.save()
-		send_fb_msg(fbid, str(Product.objects.get(ProductID=pid).ProductName)+" was already in cart, increased quanitity")
+		send_fb_msg(fbid, get_full_product_name(pid) + " was already in cart, increased quanitity")
 
 def get_full_product_name(pid):
 	p = Product.objects.get(ProductID=pid)
