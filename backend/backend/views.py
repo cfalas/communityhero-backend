@@ -552,7 +552,7 @@ def show_cart(fbid):
 	for result in cart_contents:
 		minp,maxp = min_max_price(result.PriceID.ProductID)
 		carousel.append({
-			"title":result.PriceID.ProductID.ProductName,
+			"title":get_full_product_name(result.PriceID.ProductID.ProductID),
 			"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.PriceID.ProductID.ProductID)+".jpg",
 			"subtitle": 'Usually ranges from €' + str(minp) + ' to €' + str(maxp) + '\nQuantity: ' + str(result.Quantity),
 			"buttons": [
@@ -590,3 +590,5 @@ def add_cart(fbid, pid):
 		send_fb_msg(fbid, str(Product.objects.get(ProductID=pid).ProductName)+" was already in cart, increased quanitity")
 
 def get_full_product_name(pid):
+	p = Product.objects.get(ProductID=pid)
+	return str(p.BrandID.BrandName) + ' ' + str(p.ProductName)
