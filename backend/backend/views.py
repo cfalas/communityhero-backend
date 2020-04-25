@@ -576,7 +576,7 @@ def min_max_price(product_id):
 
 def add_cart(fbid, pid):
 	print(Price.objects.filter(ProductID=pid).order_by('Price')[0])
-	price = Price.objects.filter(ProductID=mindistproduct).order_by('Price')[0]
+	price = Price.objects.filter(ProductID=pid).order_by('Price')[0]
 	try:
 		item = ShoppingItem(UserID=fbid, PriceID=price, Quantity=1)
 		item.save()
