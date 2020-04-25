@@ -363,7 +363,7 @@ def messenger(request, *args, **kwargs):
 					print(message)
 					if 'quick_reply' in message['message']:
 						payload = message['message']['quick_reply']['payload']
-						if "CHOOSE_SHOP" in payload:
+						if "CHOOSE_STORE" in payload:
 							choose_shop(message['sender']['id'], payload.split('|')[1])
 					else:
 						# Assuming the sender only sends text. Non-text messages like stickers, audio, pictures
