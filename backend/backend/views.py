@@ -554,7 +554,7 @@ def show_cart(fbid):
 		carousel.append({
 			"title":result.PriceID.ProductID.ProductName,
 			"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.PriceID.ProductID)+".jpg",
-			"subtitle": 'Usually ranges from ' + str(minp) + '-' + str(maxp),
+			"subtitle": 'Usually ranges from €' + str(minp) + ' to €' + str(maxp) + '\nQuantity: ' + str(result.Quantity),
 			"buttons": [
 				{
 					"type": "postback",
