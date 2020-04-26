@@ -709,6 +709,9 @@ def checkout(fbid):
 		
 		shops = Shop.objects.all()
 		user = User.objects.get(Userphonenumber=fbid)
+		if user.Userlatitude==None or user.Userlongitude==None:
+			send_fb_msg(fbid, 'User location not set. An error has occured :(')
+			return None
 		close_shops = []
 		for shop in shops:
 			if shop.ShopLatitude==None or shop.ShopLongitude==None: continue
