@@ -64,6 +64,11 @@ def producttype_collection(request):
 		return Response(serializer.data)
 
 @api_view(['GET'])
+def shop_colection(request):
+	serializer = ShopSerializer(Shop.objects.all(), many=True)
+	return Response(serializer.data)
+
+@api_view(['GET'])
 def producttype_name(request, name):
 	if request.method == 'GET':
 		posts = ProductType.objects.filter(Q(ProductTypeName__icontains=name) | Q(CategoryID__CategoryName__icontains=name))
