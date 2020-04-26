@@ -766,8 +766,8 @@ def update_popularities():
 	for i in Product.objects.all():
 		count_items[i.ProductID] = 0
 	for i in ShoppingItem.objects.all():
-		if i.PriceID.ProductID in count_items:
-			count_items[i.PriceID.ProductID.ProductID]+=1
+		count_items[i.PriceID.ProductID.ProductID]+=1
+	print(count_items)
 	min_item = min(count_items, key=count_items.get)
 	max_item = max(count_items, key=count_items.get)
 	if count_items[min_item] == count_items[max_item]:
@@ -777,6 +777,7 @@ def update_popularities():
 		for i in count_items:
 			count_items[i] = (count_items[i]-count_items[min_item])/(count_items[max_item] - count_items[min_item])*0.02 + 1
 			print('Item weight:', i, count_items[i])
+	print(count_items)
 	for item in count_items:
 		p = Product.objects.get(ProductID=item)
 		p.ProductWeight = count_items[item]
