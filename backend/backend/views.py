@@ -701,7 +701,7 @@ def checkout(fbid):
 		RADIUS = 5
 		def total_price_at_shop(shop):
 			cart = ShoppingItem.objects.filter(UserID__Userphonenumber=fbid)
-			total_price = decimal.Decimal(0)
+			total_price = Decimal(0)
 			for item in cart:
 				price = Price.objects.get(ProductID=item.PriceID.ProductID, ShopID=shop)
 				total_price+= price.Price * item.Quantity
@@ -752,7 +752,7 @@ def checkout(fbid):
 		store = u.UserShopID
 	getcontext().prec = 2
 	price = checkout_shop(store)
-	send_fb_msg(fbid, f'Your order was placed! The total cost is €{decimal.Decimal(price)}. We\'ll send you a message when someone claims it.')
+	send_fb_msg(fbid, f'Your order was placed! The total cost is €{Decimal(price)}. We\'ll send you a message when someone claims it.')
 	
 def confirm(user, tag, message):
 	send_fb_msg(user, message, quick_replies=[
