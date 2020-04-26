@@ -766,7 +766,7 @@ def update_popularities():
 	for i in Product.objects.all():
 		count_items[i.ProductID] = 0
 	for i in ShoppingItem.objects.all():
-		count_items[i.PriceID.ProductID.ProductID]+=i.Quantity
+		count_items[i.PriceID.ProductID.ProductID]+= float(i.Quantity)
 	print(count_items)
 	min_item = count_items[min(count_items, key=count_items.get)]
 	max_item = count_items[max(count_items, key=count_items.get)]
