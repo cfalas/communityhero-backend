@@ -13,7 +13,7 @@ import random
 import names
 import json
 import os
-import decimal
+from decimal import *
 import nltk
 import requests
 
