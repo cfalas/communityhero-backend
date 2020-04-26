@@ -678,7 +678,7 @@ def shops_around_user(user):
 		})
 	btns.append({
 		"content_type": "text",
-		"title": "I don't mind / Cheapest",
+		"title": "Don't mind/Cheapest",
 		"payload": "CHOOSE_STORE|-1"
 	})
 	return btns
