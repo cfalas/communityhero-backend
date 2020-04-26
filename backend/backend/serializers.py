@@ -3,36 +3,41 @@ from backend.models import *
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ('CategoryID', 'CategoryName')
+	class Meta:
+		model = Category
+		fields = ('CategoryID', 'CategoryName')
 
 class ProductTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductType
-        fields = ('ProductTypeID', 'ProductTypeName', 'CategoryID')
-        depth = 2
+	class Meta:
+		model = ProductType
+		fields = ('ProductTypeID', 'ProductTypeName', 'CategoryID')
+		depth = 2
 
 class ProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = ('ProductID', 'WordpressID', 'ProductName', 'ProductTypeID', 'ProductBrandID', 'ProductQuantity', 'ProductUnit', 'ProductBarcode')
-        depth = 3
+	class Meta:
+		model = Product
+		fields = ('ProductID', 'WordpressID', 'ProductName', 'ProductTypeID', 'ProductBrandID', 'ProductQuantity', 'ProductUnit', 'ProductBarcode')
+		depth = 3
 
 class OrderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PastOrder
-        fields = ('OrderID', 'UserID')
-        depth = 2
+	class Meta:
+		model = PastOrder
+		fields = ('OrderID', 'UserID')
+		depth = 2
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OrderItems
-        fields = ('OrderID', 'PriceID', 'Quantity', 'Notes')
-        depth = 3
+	class Meta:
+		model = OrderItems
+		fields = ('OrderID', 'PriceID', 'Quantity', 'Notes')
+		depth = 3
 
 class ShoppingItemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ShoppingItem
-        fields = ('PriceID', 'Quantity', 'Notes')
-        depth = 3
+	class Meta:
+		model = ShoppingItem
+		fields = ('PriceID', 'Quantity', 'Notes')
+		depth = 3
+
+class ShopSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Shop
+		fields = ('ShopName', 'ShopLatitude', 'ShopLongitude')
