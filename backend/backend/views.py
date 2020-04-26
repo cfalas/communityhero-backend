@@ -639,6 +639,9 @@ def add_cart(fbid, pid):
 		item.Quantity+=1
 		item.save()
 		send_fb_msg(fbid, get_full_product_name(pid) + " was already in cart, increased quanitity")
+	
+	# Update popularities
+	update_popularities()
 
 def remove_cart(fbid, pid):
 	item = ShoppingItem.objects.get(PriceID__ProductID__ProductID=pid).delete()
@@ -745,7 +748,6 @@ def checkout(fbid):
 	price = checkout_shop(store)
 	send_fb_msg(fbid, f'Your order was placed! The total cost is €{price}. We\'ll send you a message when someone claims it.')
 	
-
 def confirm(user, tag, message):
 	send_fb_msg(user, message, quick_replies=[
 		{
@@ -758,3 +760,19 @@ def confirm(user, tag, message):
 			"payload": tag+"_NO"
 		},
 	])
+
+def update_popularities():
+	count_items = {}
+	for i in ShoppingItem.objects.all():
+		if i.PriceID.ProductID in count_items:
+			count_items[i.PriceID.ProductID]+=1
+		else:
+			count_items[i.PriceID.ProductID]=1
+	min_item = min(count_items, key=count_items.get)
+	max_item = max(count_items, key=count_items.get)
+	count_items = [ (count_items[i]-count_items[min_item])/(count_items[max_item] - count_items[min_item])*0.02 + 1 for i in count_items ]
+	for item in count_items:
+		p = Product.objects.get(ProductID=item)
+		p.ProductWeight = count_items[item]
+		p.save()
+		
