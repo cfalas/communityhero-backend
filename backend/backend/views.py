@@ -763,11 +763,11 @@ def confirm(user, tag, message):
 
 def update_popularities():
 	count_items = {}
+	for i in Product.objects.all():
+		count_items[i.ProductID] = 0
 	for i in ShoppingItem.objects.all():
 		if i.PriceID.ProductID in count_items:
 			count_items[i.PriceID.ProductID.ProductID]+=1
-		else:
-			count_items[i.PriceID.ProductID.ProductID]=1
 	min_item = min(count_items, key=count_items.get)
 	max_item = max(count_items, key=count_items.get)
 	if count_items[min_item] == count_items[max_item]:
