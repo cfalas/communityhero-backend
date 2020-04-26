@@ -747,7 +747,7 @@ def checkout(fbid):
 			return
 	else:
 		store = u.UserShopID
-	getcontext.prec = 2
+	getcontext().prec = 2
 	price = checkout_shop(store)
 	send_fb_msg(fbid, f'Your order was placed! The total cost is €{decimal.Decimal(price)}. We\'ll send you a message when someone claims it.')
 	
