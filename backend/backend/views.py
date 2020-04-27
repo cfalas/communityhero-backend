@@ -172,7 +172,7 @@ def create_data(request):
 				continue
 			shop = random.choice(Shop.objects.all())
 			available_items = Price.objects.all().filter(ShopID=shop.ShopID)
-			num_of_items = random.randint(1, len(available_items)-1)
+			num_of_items = random.randint(1, 9)
 
 			items = random.sample(list(available_items), num_of_items)
 
