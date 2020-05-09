@@ -126,7 +126,7 @@ def user_radius(request):
 		users = PastOrder.objects.filter(OrderDelivered=False)
 		result_users = []
 		for user in users:
-			if distance(lat, lng, user.UserID.Userlatitude, user.UserID.Userlongitude)<rad:
+			if user.UserID.Userlatitude!=None and user.UserID.Userlongitude!=None and distance(lat, lng, user.UserID.Userlatitude, user.UserID.Userlongitude)<rad:
 				result_users.append(user)
 
 		serializer = OrderSerializer(result_users, many=True)
