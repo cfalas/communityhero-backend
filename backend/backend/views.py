@@ -157,7 +157,7 @@ def create_data(request):
 				except:
 					pass
 
-		num_users = 0
+		num_users = 50
 
 		for j in range(num_users):
 			phonenumber = '99' + ''.join(random.choice("0123456789") for _ in range(6))
@@ -514,7 +514,7 @@ def messenger_chatbot(b):
 		if u.UserState==STATE['registering']:
 			r['content'], u.Userlatitude, u.Userlongitude = geocode(b)
 			if r['content'] == None:
-				r['content'] = 'Sorry, I didn\'t find any results. Can you try again with a different query?'
+				r['content'] = 'Sorry, I didn\'t find any results for the location you gave me. Can you try again with a different query?'
 			else:
 				u.UserState = STATE['geocoding']
 				u.save()
@@ -528,7 +528,7 @@ def messenger_chatbot(b):
 				u.UserState = STATE['registering']
 				u.save()
 			else:
-				r['content'] = 'Sorry, didn\'t get you. Can you try once more?'
+				r['content'] = 'Sorry, didn\'t get you. Can you tell me if the link I sent you is your location?'
 		elif u.UserState == STATE['choose_supermarket']:
 			send_fb_msg(u.Userphonenumber, 'You still haven\'t chosen your preferred supermarket. Please choose one from the list below', quick_replies=shops_around_user(u))
 			return None
