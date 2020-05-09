@@ -126,7 +126,7 @@ def user_radius(request):
 		users = PastOrder.objects.filter(OrderDelivered=False)
 		result_users = []
 		for user in users:
-			if distance(lat, lng, user.UserID.Userlatitude, user.UserID.Userlongitude)<rad:
+			if user.UserID.Userlatitude!=None and user.UserID.Userlongitude!=None and distance(lat, lng, user.UserID.Userlatitude, user.UserID.Userlongitude)<rad:
 				result_users.append(user)
 
 		serializer = OrderSerializer(result_users, many=True)
@@ -157,7 +157,7 @@ def create_data(request):
 				except:
 					pass
 
-		num_users = 0
+		num_users = 50
 
 		for j in range(num_users):
 			phonenumber = '99' + ''.join(random.choice("0123456789") for _ in range(6))
@@ -172,7 +172,7 @@ def create_data(request):
 				continue
 			shop = random.choice(Shop.objects.all())
 			available_items = Price.objects.all().filter(ShopID=shop.ShopID)
-			num_of_items = random.randint(1, len(available_items)-1)
+			num_of_items = random.randint(1, 9)
 
 			items = random.sample(list(available_items), num_of_items)
 
@@ -289,7 +289,7 @@ def chatbot(request):
 						r['content']+=b['content'].split('\n')[item] + ": " + req['items'][item] + '\n'
 					else:
 						r['content']+=req['items'][item] + '\n'
-				r['content']+='That would cost you a total of €' + str(req['cost']) + '\nYou can edit or complete your order here: http://192.168.30.179/wordpress/index.php/cart/?fill_cart='
+				r['content']+='That would cost you a total of €' + str(req['cost']) + '\nYou can edit or complete your order here: https://communityhero.me/index.php/cart/?fill_cart='
 				for item in range(len(req['itemsWordpress'])):
 					r['content']+=str(req['itemsWordpress'][item])
 					if item!=len(req['items'])-1:
@@ -514,7 +514,7 @@ def messenger_chatbot(b):
 		if u.UserState==STATE['registering']:
 			r['content'], u.Userlatitude, u.Userlongitude = geocode(b)
 			if r['content'] == None:
-				r['content'] = 'Sorry, I didn\'t find any results. Can you try again with a different query?'
+				r['content'] = 'Sorry, I didn\'t find any results for the location you gave me. Can you try again with a different query?'
 			else:
 				u.UserState = STATE['geocoding']
 				u.save()
@@ -528,7 +528,7 @@ def messenger_chatbot(b):
 				u.UserState = STATE['registering']
 				u.save()
 			else:
-				r['content'] = 'Sorry, didn\'t get you. Can you try once more?'
+				r['content'] = 'Sorry, didn\'t get you. Can you tell me if the link I sent you is your location?'
 		elif u.UserState == STATE['choose_supermarket']:
 			send_fb_msg(u.Userphonenumber, 'You still haven\'t chosen your preferred supermarket. Please choose one from the list below', quick_replies=shops_around_user(u))
 			return None
