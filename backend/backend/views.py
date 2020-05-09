@@ -312,7 +312,7 @@ def geocode(msg):
 		req = req[0]
 	else:
 		return None, None, None
-	return "So you're telling me you live here? https://www.openstreetmap.org/?mlat=" + req['lat'] + "&mlon=" + req['lon']+ " \nIt's not that I don't know, just checking if you know ;)", req['lat'], req['lon']
+	return "So you're telling me you live here? https://www.openstreetmap.org/?mlat=" + req['lat'] + "&mlon=" + req['lon']+ "&zoom=18" + " \nIt's not that I don't know, just checking if you know ;)", req['lat'], req['lon']
 
 def area(box):
 	return distance(box[1], box[2], box[0], box[2])*distance(box[3], box[0], box[2], box[0])
@@ -503,7 +503,7 @@ def messenger_chatbot(b):
 	r = {}
 	r['content'] = ''
 	if not user_exists(b['from']):
-		r['content'] =  'Welcome! I noticed you are new here. Why don\'t you go ahead and send me your address so that I can sign you up?'
+		r['content'] =  "Welcome! I noticed you are new here. Normally, I'd ask for your address to sign you up, but our service only works in Cyprus, and you probably don't live in Cyprus. No worries! Just reply back with your fake Cypriot address, \nMelinas Merkouri 4, Engomi, Nicosia"
 		u = User(Userphonenumber=b['from'], UserState=STATE['registering'], UserMessenger=True)
 		u.save()
 		send_fb_msg(b['from'], r['content'])
@@ -514,7 +514,7 @@ def messenger_chatbot(b):
 		if u.UserState==STATE['registering']:
 			r['content'], u.Userlatitude, u.Userlongitude = geocode(b)
 			if r['content'] == None:
-				r['content'] = 'Sorry, I didn\'t find any results for the location you gave me. Can you try again with a different query?'
+				r['content'] = 'Sorry, I didn\'t find any results for the location you gave me. Can you try retyping your address?'
 			else:
 				u.UserState = STATE['geocoding']
 				u.save()
@@ -528,7 +528,7 @@ def messenger_chatbot(b):
 				u.UserState = STATE['registering']
 				u.save()
 			else:
-				r['content'] = 'Sorry, didn\'t get you. Can you tell me if the link I sent you is your location?'
+				r['content'] = 'Sorry, didn\'t get you. Can you tell me if the link I sent you is your location? You can just reply with a yes or no'
 		elif u.UserState == STATE['choose_supermarket']:
 			send_fb_msg(u.Userphonenumber, 'You still haven\'t chosen your preferred supermarket. Please choose one from the list below', quick_replies=shops_around_user(u))
 			return None
@@ -699,7 +699,8 @@ def choose_shop(fbid, shop):
 	
 	u.UserState=STATE['registered']
 	u.save()
-	send_fb_msg(fbid, 'You are now registered! Nice! You can send in orders at any time.')
+	send_fb_msg(fbid, 'You are now registered! Nice! You can send in orders at any time, by sending one seperate message for each item you want to order (e.g. sending "milk" will show you all available options for milk.')
+	send_fb_msg(fbid, "We don't have that many items yet, as we're still in demo mode, but some items you can try out include cling film, milk, butter, beer, juice")
 
 def checkout(fbid):
 	def find_cheapest_store():
