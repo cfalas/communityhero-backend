@@ -391,8 +391,10 @@ def messenger(request, *args, **kwargs):
 					elif 'REMOVE_CART' in payload:
 						remove_cart(message['sender']['id'], payload.split('|')[1])
 					elif 'CHECKOUT' in payload:
-						show_cart(message['sender']['id'])
-						confirm(message['sender']['id'], 'CHECKOUT', 'Are you sure you want to checkout?')
+						if show_cart(message['sender']['id'])>0:
+							confirm(message['sender']['id'], 'CHECKOUT', 'Are you sure you want to checkout?')
+						else:
+							send_fb_msg(message['sender']['id'], "You need to have something in your cart in order to checkout")
 
 
 
@@ -630,6 +632,7 @@ def show_cart(fbid):
 		status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
 	else:
 		send_fb_msg(fbid, 'Your cart is empty :(\nYou can add something to your cart by sending it as a message')
+	return len(cart_contents)
 
 def min_max_price(product_id):
 	price_list = Price.objects.filter(ProductID=product_id).order_by('Price')
