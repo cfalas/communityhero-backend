@@ -537,7 +537,7 @@ def messenger_chatbot(b):
 			if "checkout" in b['content'].lower() or "check out" in b['content'].lower():
 				show_cart(u.Userphonenumber)
 				confirm(u.Userphonenumber, 'CHECKOUT', 'Are you sure you want to checkout?')
-			elif "cart" in b['content'].lower().split(): #splitting to avoid words like "cartridge" to trigger showing cart
+			elif "cart" in b['content'].lower().split() and not ("add" in b['content'].lower().split() or "insert" in b['content'].lower().split()): #splitting to avoid words like "cartridge" to trigger showing cart
 				show_cart(u.Userphonenumber)
 			else:
 				print('Sending ORDER request using items', b)
