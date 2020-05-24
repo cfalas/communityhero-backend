@@ -218,7 +218,7 @@ def sms_register(request):
 		else:
 			lt = b['lat']
 			ln = b['lng']
-		
+
 
 
 		u = User(Userphonenumber=b["from"], Userlatitude=float(lt), Userlongitude=float(ln))
@@ -231,7 +231,7 @@ def download_products(request, shop):
 	response = HttpResponse(content_type='text/csv')
 	response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
 	b = Price.objects.filter(ShopID=shop)
-	
+
 	t = loader.get_template('csv.txt')
 	c = {'data': b}
 	response.write(t.render(c))
@@ -257,7 +257,7 @@ def chatbot(request):
 		r = {}
 		r['content'] = ''
 		if not user_exists(b['from']):
-			r['content'] =  'Welcome! I noticed you are new here. Why don\'t you go ahead and send me your address so that I can sign you up?'
+			r['content'] =  'Welcome! I noticed you are new here. CommunityHero is a grocery delivery platform aimed for at-risk groups, allowing you to order just by sending a few texts! Why don\'t you go ahead and send me your address so that I can sign you up?'
 			u = User(Userphonenumber=b['from'], UserState=STATE['registering'])
 			u.save()
 		else:
@@ -294,7 +294,7 @@ def chatbot(request):
 					r['content']+=str(req['itemsWordpress'][item])
 					if item!=len(req['items'])-1:
 						r['content']+=','
-		
+
 		r['from'] = 'bot'
 
 		return JsonResponse(r)
@@ -350,7 +350,7 @@ def cart_order(request, user):
 		for item in cart:
 			o = OrderItems(OrderID=order, PriceID=item.PriceID, Notes=item.Notes, Quantity=item.Quantity)
 			o.save()
-		cart = ShoppingItem.objects.filter(UserID=user).delete()		
+		cart = ShoppingItem.objects.filter(UserID=user).delete()
 		return HttpResponse(status=200)
 
 @api_view(['GET', 'POST'])
@@ -363,7 +363,7 @@ def messenger(request, *args, **kwargs):
 		for entry in incoming_message['entry']:
 			for message in entry['messaging']:
 				# Check to make sure the received call is a message call
-				# This might be delivery, optin, postback for other events 
+				# This might be delivery, optin, postback for other events
 				if 'message' in message:
 					# Print the message to the terminal
 					print(message)
@@ -376,8 +376,8 @@ def messenger(request, *args, **kwargs):
 
 					else:
 						# Assuming the sender only sends text. Non-text messages like stickers, audio, pictures
-						# are sent as attachments and must be handled accordingly. 
-						post_facebook_message(message['sender']['id'], message['message']['text'])  
+						# are sent as attachments and must be handled accordingly.
+						post_facebook_message(message['sender']['id'], message['message']['text'])
 				elif 'postback' in message:
 					payload = message['postback']['payload']
 					if 'REGISTER' in payload:
@@ -385,7 +385,7 @@ def messenger(request, *args, **kwargs):
 					elif 'SHOWCART' in payload:
 						show_cart(message['sender']['id'])
 					elif 'HELP' in payload:
-						send_fb_msg(message['sender']['id'], 'Hi! I\'m the Community Hero Facebook Messenger bot. I can help you find items that you need to shop, and deliver them  to you by volunteers. Once finished with the registration process, you can send anything that you need to add to your cart. A list of options will be returned, and by clicking \'Add to Cart\' below the option that you like, that specific product will be added to your cart.')
+						send_fb_msg(message['sender']['id'], 'Hi! I\'m the Community Hero Facebook Messenger bot. I can help you find items that you need to shop, and deliver them to you by volunteers. Once finished with the registration process, you can send anything that you need to add to your cart, by sending one message per item (for example, "milk"). A list of options will be returned for each item search, and by clicking \'Add to Cart\' below the option that you like, that specific product will be added to your cart. Once you\'re done filling your cart, select "Checkout" from the action bar. If you want to edit your cart, just select "Show cart". Happy ordering :)')
 					elif 'ADD_CART' in payload:
 						add_cart(message['sender']['id'], payload.split('|')[1])
 					elif 'REMOVE_CART' in payload:
@@ -393,7 +393,7 @@ def messenger(request, *args, **kwargs):
 					elif 'CHECKOUT' in payload:
 						show_cart(message['sender']['id'])
 						confirm(message['sender']['id'], 'CHECKOUT', 'Are you sure you want to checkout?')
-						
+
 
 
 	else:
@@ -401,16 +401,16 @@ def messenger(request, *args, **kwargs):
 			return HttpResponse(request.GET['hub.challenge'])
 		else:
 			return HttpResponse('Error, invalid token')
-	return HttpResponse()    
+	return HttpResponse()
 
-def post_facebook_message(fbid, recevied_message):
+def post_facebook_message(fbid, received_message):
 	# Remove all punctuations, lower case the text and split it based on space
 	PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
-	user_details_url = "https://graph.facebook.com/v6.0/%s"%fbid 
-	user_details_params = {'fields':'first_name,last_name,profile_pic', 'access_token':PAGE_ACCESS_TOKEN} 
-	user_details = requests.get(user_details_url, user_details_params).json() 
+	user_details_url = "https://graph.facebook.com/v6.0/%s"%fbid
+	user_details_params = {'fields':'first_name,last_name,profile_pic', 'access_token':PAGE_ACCESS_TOKEN}
+	user_details = requests.get(user_details_url, user_details_params).json()
 
-	r = messenger_chatbot({"from": fbid, "content": recevied_message})
+	r = messenger_chatbot({"from": fbid, "content": received_message})
 	if r==None:
 		print('Chatbot didn\'t return')
 	else:
@@ -488,7 +488,7 @@ def create_order(b):
 					item.save()
 		else:
 			items.append('not found')
-		
+
 	resp = {}
 	resp['userID'] = user.UserID
 	resp["items"] = items
@@ -503,7 +503,7 @@ def messenger_chatbot(b):
 	r = {}
 	r['content'] = ''
 	if not user_exists(b['from']):
-		r['content'] =  "Welcome! I noticed you are new here. Normally, I'd ask for your address to sign you up, but our service only works in Cyprus, and you probably don't live in Cyprus. No worries! Just reply back with your fake Cypriot address, \nMelinas Merkouri 4, Engomi, Nicosia"
+		r['content'] =  "Welcome! I noticed you are new here. Normally, I'd ask for your address to sign you up, but our service only works in Cyprus, and you probably don't live in Cyprus. No worries! Just reply back with this Cypriot address, \nMelinas Merkouri 4, Engomi, Nicosia"
 		u = User(Userphonenumber=b['from'], UserState=STATE['registering'], UserMessenger=True)
 		u.save()
 		send_fb_msg(b['from'], r['content'])
@@ -534,40 +534,46 @@ def messenger_chatbot(b):
 			return None
 		elif u.UserState == STATE['registered']:
 			# Order received
-			print('Sending ORDER request using items', b)
-			for query in b['content'].split('\n'):
-				search_results = search_products(query)
-				print('Search results:',search_results)
-				if len(search_results)>0:
-					carousel = []
-					for result in search_results:
-						minp,maxp = min_max_price(result)
-						subtitle_string = ''
-						if minp==None:
-							subtitle_string = 'Not available currently'
-						else:
-							subtitle_string = 'Usually ranges from €' + str(minp) + ' to €' + str(maxp)
-						carousel.append({
-							"title":get_full_product_name(result.ProductID),
-							"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.ProductID)+".jpg",
-							"subtitle": subtitle_string,
-							"buttons": [
-								{
-									"type": "postback",
-									"title": "Add to Cart",
-									"payload": "ADD_CART|"+str(result.ProductID)
-								}
-							]
-						})
-					PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
-					send_fb_msg(u.Userphonenumber, "Here's what I found for " + query + ":")
-					post_message_url = 'https://graph.facebook.com/v6.0/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
-					response_msg = json.dumps({"recipient":{"id":u.Userphonenumber}, "message":{"attachment":{"type": "template", "payload":{"template_type": "generic", "elements":carousel}}}})
-					status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
-					print("Sending to FB:", response_msg)
-					print('Message status', status)
-				else:
-					send_fb_msg(u.Userphonenumber, "I didn't find anything for " + query + " :(")
+			if "checkout" in b['content'].lower() or "check out" in b['content'].lower():
+				show_cart(u.Userphonenumber)
+				confirm(u.Userphonenumber, 'CHECKOUT', 'Are you sure you want to checkout?')
+			elif "cart" in b['content'].lower().split(): #splitting to avoid words like "cartridge" to trigger showing cart
+				show_cart(u.Userphonenumber)
+			else:
+				print('Sending ORDER request using items', b)
+				for query in b['content'].split('\n'):
+					search_results = search_products(query)
+					print('Search results:',search_results)
+					if len(search_results)>0:
+						carousel = []
+						for result in search_results:
+							minp,maxp = min_max_price(result)
+							subtitle_string = ''
+							if minp==None:
+								subtitle_string = 'Not available currently'
+							else:
+								subtitle_string = 'Usually ranges from €' + str(minp) + ' to €' + str(maxp)
+							carousel.append({
+								"title":get_full_product_name(result.ProductID),
+								"image_url": "https://rhubarb-cake-22341.herokuapp.com/static/images/"+str(result.ProductID)+".jpg",
+								"subtitle": subtitle_string,
+								"buttons": [
+									{
+										"type": "postback",
+										"title": "Add to Cart",
+										"payload": "ADD_CART|"+str(result.ProductID)
+									}
+								]
+							})
+						PAGE_ACCESS_TOKEN = os.environ['FB_TOKEN']
+						send_fb_msg(u.Userphonenumber, "Here's what I found for " + query + ":")
+						post_message_url = 'https://graph.facebook.com/v6.0/me/messages?access_token=%s'%PAGE_ACCESS_TOKEN
+						response_msg = json.dumps({"recipient":{"id":u.Userphonenumber}, "message":{"attachment":{"type": "template", "payload":{"template_type": "generic", "elements":carousel}}}})
+						status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
+						print("Sending to FB:", response_msg)
+						print('Message status', status)
+					else:
+						send_fb_msg(u.Userphonenumber, "I didn't find anything for " + query + " :(")
 
 			# Prevents from trying to send another empty message
 			return None
@@ -646,7 +652,7 @@ def add_cart(fbid, pid):
 		item.Quantity+=1
 		item.save()
 		send_fb_msg(fbid, get_full_product_name(pid) + " was already in cart, increased quanitity")
-	
+
 	# Update popularities
 	update_popularities()
 
@@ -696,11 +702,11 @@ def choose_shop(fbid, shop):
 		print('No shop preferred by user', fbid)
 	else:
 		u.UserShopID = Shop.objects.get(ShopID=shop)
-	
+
 	u.UserState=STATE['registered']
 	u.save()
-	send_fb_msg(fbid, 'You are now registered! Nice! You can send in orders at any time, by sending one seperate message for each item you want to order (e.g. sending "milk" will show you all available options for milk.')
-	send_fb_msg(fbid, "We don't have that many items yet, as we're still in demo mode, but some items you can try out include cling film, milk, butter, beer, juice")
+	send_fb_msg(fbid, 'You are now registered! Nice! You can send in orders at any time, by sending one seperate message for each item you want to order (e.g. sending "milk" will show you all available options for milk. When you are done ordering, select the Checkout option from the action bar. :)')
+	send_fb_msg(fbid, "We don't have that many items yet, as we're still in demo mode, but some items you can try out include milk, butter, beer, juice, wine, cling film..")
 
 def checkout(fbid):
 	def find_cheapest_store():
@@ -712,7 +718,7 @@ def checkout(fbid):
 				price = Price.objects.get(ProductID=item.PriceID.ProductID, ShopID=shop)
 				total_price+= price.Price * item.Quantity
 			return total_price
-		
+
 		shops = Shop.objects.all()
 		user = User.objects.get(Userphonenumber=fbid)
 		if user.Userlatitude==None or user.Userlongitude==None:
@@ -734,9 +740,9 @@ def checkout(fbid):
 				minprice = total_price_at_shop(shop.ShopID)
 				minprice_store = shop.ShopID
 		return minprice_store
-				
+
 	# For the given user (fbid), the contents of the cart are made into an order from the shop specified
-	# Returns: Total Cost	
+	# Returns: Total Cost
 	def checkout_shop(shop):
 		total_cost = 0
 		cart = ShoppingItem.objects.filter(UserID__Userphonenumber=fbid)
@@ -748,7 +754,7 @@ def checkout(fbid):
 			o.save()
 		cart = ShoppingItem.objects.filter(UserID__Userphonenumber=fbid).delete()
 		return total_cost
-	
+
 	u = User.objects.get(Userphonenumber=fbid)
 	if u.UserShopID==None:
 		store = find_cheapest_store()
@@ -758,7 +764,7 @@ def checkout(fbid):
 		store = u.UserShopID
 	price = checkout_shop(store)
 	send_fb_msg(fbid, f'Your order was placed! The total cost is €{price:.2f}. We\'ll send you a message when someone claims it.')
-	
+
 def confirm(user, tag, message):
 	send_fb_msg(user, message, quick_replies=[
 		{
@@ -793,4 +799,3 @@ def update_popularities():
 		p = Product.objects.get(ProductID=item)
 		p.ProductWeight = count_items[item]
 		p.save()
-		
