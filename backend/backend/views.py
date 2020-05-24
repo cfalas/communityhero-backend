@@ -393,8 +393,6 @@ def messenger(request, *args, **kwargs):
 					elif 'CHECKOUT' in payload:
 						if show_cart(message['sender']['id'])>0:
 							confirm(message['sender']['id'], 'CHECKOUT', 'Are you sure you want to checkout?')
-						else:
-							send_fb_msg(message['sender']['id'], "You need to have something in your cart in order to checkout")
 
 
 
